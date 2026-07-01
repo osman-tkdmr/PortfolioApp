@@ -1,0 +1,72 @@
+@model PortfolioApp.DTO.ViewModels.Public.HomeViewModel
+<section id="portfolio" class="section section-alt">
+    <div class="container">
+        <div class="text-center mb-5 fade-up">
+            <p class="section-subtitle">@Localizer["SectionLabel"]</p>
+            <h2 class="section-title">@Localizer["SectionTitle"]</h2>
+            <div class="section-divider mx-auto"></div>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var project in Model?.FeaturedProjects ?? [])
+            {
+                <div class="col-md-6 col-lg-4 fade-up">
+                    <div class="project-card card-modern">
+                        @if (!string.IsNullOrEmpty(project.CoverImageUrl))
+                        {
+                            <img src="@project.CoverImageUrl" alt="@project.Title" />
+                        }
+                        else
+                        {
+                            <div style="height:240px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center">
+                                <i class="fa fa-code fa-3x text-white opacity-50"></i>
+                            </div>
+                        }
+                        <div class="project-overlay text-white">
+                            <div>
+                                <h5 class="fw-bold mb-1">@project.Title</h5>
+                                <p class="small opacity-75 mb-2">@project.ShortDescription</p>
+                                <div class="d-flex gap-2">
+                                    <a href="/projeler/@project.Slug" class="btn-primary-modern text-decoration-none" style="padding:.4rem 1rem;font-size:.8rem">
+                                        <i class="fa fa-eye"></i> @Localizer["DetailButton"]
+                                    </a>
+                                    @if (!string.IsNullOrEmpty(project.SourceUrl))
+                                    {
+                                        <a href="@project.SourceUrl" target="_blank" class="btn-outline-modern text-decoration-none" style="padding:.4rem 1rem;font-size:.8rem;border-color:rgba(255,255,255,.5);color:#fff">
+                                            <i class="fab fa-github"></i>
+                                        </a>
+                                    }
+                                    @if (!string.IsNullOrEmpty(project.DemoUrl))
+                                    {
+                                        <a href="@project.DemoUrl" target="_blank" class="btn-outline-modern text-decoration-none" style="padding:.4rem 1rem;font-size:.8rem;border-color:rgba(255,255,255,.5);color:#fff">
+                                            <i class="fa fa-arrow-up-right-from-square"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 pb-4">
+                            <h6 class="fw-bold mb-1">@project.Title</h6>
+                            <p class="small text-muted mb-2">@project.ShortDescription</p>
+                            @if (project.Technologies?.Count > 0)
+                            {
+                                <div class="d-flex flex-wrap gap-1">
+                                    @foreach (var tech in project.Technologies.Take(4))
+                                    {
+                                        <span class="badge rounded-pill" style="background:rgba(212,168,83,.1);color:var(--primary);font-size:.7rem">@tech.Name</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="text-center mt-5 fade-up">
+            <a href="/projeler" class="btn-outline-modern text-decoration-none">
+                <i class="fa fa-folder-open"></i> @Localizer["ViewAllProjects"]
+            </a>
+        </div>
+    </div>
+</section>

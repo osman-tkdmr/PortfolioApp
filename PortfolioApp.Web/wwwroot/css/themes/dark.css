@@ -1,0 +1,26 @@
+/* Dark Theme — overrides Modern CSS variables */
+:root {
+    --primary: #7c6af7;
+    --primary-hover: #6b5ae6;
+    --secondary: #0f0f1a;
+    --accent: #9d8cf9;
+    --bg-main: #0f0f1a;
+    --bg-section: #161622;
+    --bg-card: #1e1e2e;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: rgba(255, 255, 255, .06);
+    --shadow-soft: 0 8px 32px rgba(0, 0, 0, .4);
+    --shadow-hover: 0 16px 48px rgba(0, 0, 0, .5);
+    --navbar-bg: rgba(15, 15, 26, .95);
+    --hero-bg: linear-gradient(135deg, #0f0f1a 0%, #161622 100%);
+}
+body { color: var(--text-primary); }
+.navbar-brand { color: var(--text-primary) !important; }
+.nav-link { color: rgba(255,255,255,.6) !important; }
+.nav-link:hover, .nav-link.active { color: var(--primary) !important; background: rgba(124,106,247,.1); }
+.timeline-item::before { border-color: var(--bg-main); }
+.footer { background: #0a0a14; }
+.form-control-modern { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.08); color: var(--text-primary); }
+.form-control-modern::placeholder { color: var(--text-muted); }

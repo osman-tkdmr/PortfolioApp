@@ -1,0 +1,92 @@
+@model PortfolioApp.DTO.ViewModels.Public.HomeViewModel
+<section id="resume" class="section">
+    <div class="container">
+        <div class="text-center mb-5 fade-up">
+            <p class="section-subtitle">@Localizer["SectionLabel"]</p>
+            <h2 class="section-title">@Localizer["SectionTitle"]</h2>
+            <div class="section-divider mx-auto"></div>
+        </div>
+
+        <div class="row g-5">
+            <!-- Experience -->
+            <div class="col-lg-6 fade-up">
+                <h4 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                    <i class="fa fa-briefcase" style="color:var(--primary)"></i> @Localizer["ExperienceHeading"]
+                </h4>
+                <div class="timeline">
+                    @foreach (var exp in Model?.Experiences ?? [])
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-date">
+                                @exp.StartDate.ToString("MMM yyyy") — @(exp.IsCurrent ? Localizer["Present"].Value : exp.EndDate?.ToString("MMM yyyy"))
+                            </div>
+                            <h6 class="fw-bold mb-0">@exp.JobTitle</h6>
+                            <div class="text-muted small mb-2">@exp.Company @(exp.Location is not null ? $"· {exp.Location}" : "")</div>
+                            @if (!string.IsNullOrEmpty(exp.Description))
+                            {
+                                <p class="small text-secondary">@exp.Description</p>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Education -->
+            <div class="col-lg-6 fade-up" style="transition-delay:.15s">
+                <h4 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                    <i class="fa fa-graduation-cap" style="color:var(--primary)"></i> @Localizer["EducationHeading"]
+                </h4>
+                <div class="timeline">
+                    @foreach (var edu in Model?.Educations ?? [])
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-date">
+                                @edu.StartDate.Year — @(edu.IsCurrent ? Localizer["Present"].Value : edu.EndDate?.Year.ToString())
+                            </div>
+                            <h6 class="fw-bold mb-0">@edu.Degree @(edu.FieldOfStudy is not null ? $"— {edu.FieldOfStudy}" : "")</h6>
+                            <div class="text-muted small mb-2">@edu.School</div>
+                            @if (!string.IsNullOrEmpty(edu.Description))
+                            {
+                                <p class="small text-secondary">@edu.Description</p>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Certificates -->
+        @if (Model?.Certificates?.Count > 0)
+        {
+            <div class="mt-5 fade-up">
+                <h4 class="fw-bold mb-4 text-center d-flex align-items-center justify-content-center gap-2">
+                    <i class="fa fa-certificate" style="color:var(--primary)"></i> @Localizer["CertificatesHeading"]
+                </h4>
+                <div class="row g-3">
+                    @foreach (var cert in Model.Certificates)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card-modern p-3 d-flex gap-3 align-items-start">
+                                @if (!string.IsNullOrEmpty(cert.BadgeImageUrl))
+                                {
+                                    <img src="@cert.BadgeImageUrl" width="48" height="48" class="rounded" style="object-fit:contain;flex-shrink:0" />
+                                }
+                                else
+                                {
+                                    <div style="width:48px;height:48px;border-radius:8px;background:rgba(212,168,83,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                                        <i class="fa fa-award" style="color:var(--primary)"></i>
+                                    </div>
+                                }
+                                <div>
+                                    <div class="fw-semibold small">@cert.Name</div>
+                                    <div class="text-muted" style="font-size:.8rem">@cert.IssuingOrganization</div>
+                                    <div class="text-muted" style="font-size:.75rem">@cert.IssuedDate.ToString("MMM yyyy")</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</section>

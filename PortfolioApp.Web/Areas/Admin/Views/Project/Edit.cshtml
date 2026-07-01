@@ -1,0 +1,158 @@
+@model PortfolioApp.DTO.DTOs.Project.ProjectUpdateDto
+@inject IConfiguration Configuration
+@{
+    ViewData["Title"] = "Proje Düzenle";
+    var projectId = ViewData["ProjectId"];
+    var categories = ViewBag.Categories as IList<PortfolioApp.DTO.DTOs.Project.ProjectCategoryDto> ?? [];
+    var technologies = ViewBag.Technologies as IList<PortfolioApp.DTO.DTOs.Project.TechnologyDto> ?? [];
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-pen me-2 text-primary"></i>Proje Düzenle</h5>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="fa fa-arrow-left me-1"></i>Listeye Dön</a>
+</div>
+
+<form method="post" asp-action="Edit" asp-route-id="@projectId" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header fw-semibold">Proje Detayları</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Başlık <span class="text-danger">*</span></label>
+                        <input asp-for="Title" class="form-control" required />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kısa Açıklama</label>
+                        <input asp-for="ShortDescription" class="form-control" maxlength="300" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Açıklama</label>
+                        <textarea asp-for="Description" id="descriptionEditor" class="form-control" rows="10"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header fw-semibold">Teknolojiler</div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var tech in technologies)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="TechnologyIds" value="@tech.Id" id="tech_@tech.Id"
+                                       @(Model.TechnologyIds.Contains(tech.Id) ? "checked" : "") />
+                                <label class="form-check-label" for="tech_@tech.Id">@tech.Name</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header fw-semibold">Kapak Görseli</div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+                    {
+                        <div class="mb-3 text-center">
+                            <img src="@Model.CoverImageUrl" alt="Kapak" class="img-fluid rounded" style="max-height:200px;" id="coverImg" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3 text-center" id="coverPreview" style="display:none;">
+                            <img id="coverImg" src="#" alt="Kapak" class="img-fluid rounded" style="max-height:200px;" />
+                        </div>
+                    }
+                    <input type="file" name="coverImage" id="coverImage" class="form-control" accept="image/*" onchange="previewCover(this)" />
+                    <small class="text-muted">Boş bırakırsanız mevcut görsel korunur.</small>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header fw-semibold">Proje Ayarları</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kategori <span class="text-danger">*</span></label>
+                        <select asp-for="ProjectCategoryId" class="form-select" required>
+                            <option value="">Kategori seçin...</option>
+                            @foreach (var cat in categories)
+                            {
+                                if (Model.ProjectCategoryId == cat.Id)
+                                {
+                                    <option value="@cat.Id" selected>@cat.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Demo URL</label>
+                        <input asp-for="DemoUrl" type="url" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kaynak Kod URL</label>
+                        <input asp-for="SourceUrl" type="url" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Müşteri</label>
+                        <input asp-for="ClientName" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tamamlanma Tarihi</label>
+                        <input asp-for="CompletedDate" type="date" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Sıra</label>
+                        <input asp-for="DisplayOrder" type="number" class="form-control" />
+                    </div>
+                    <div class="d-flex gap-3">
+                        <div class="form-check">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="form-check-label">Aktif</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="IsFeatured" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsFeatured" class="form-check-label">Öne Çıkan</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fa fa-floppy-disk me-1"></i>Güncelle
+            </button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="https://cdn.tiny.cloud/1/@Configuration["TinyMCE:ApiKey"]/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#descriptionEditor',
+            plugins: 'lists link image media table code',
+            toolbar: 'undo redo | bold italic underline | bullist numlist | link image | table | code',
+            height: 400
+        });
+
+        function previewCover(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#coverImg').attr('src', e.target.result).show();
+                    $('#coverPreview').show();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

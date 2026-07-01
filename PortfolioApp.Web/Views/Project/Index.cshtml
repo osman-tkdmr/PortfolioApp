@@ -1,0 +1,102 @@
+@model PortfolioApp.DTO.ViewModels.Public.ProjectListViewModel
+@{
+    Layout = "~/Views/Themes/Modern/_InnerLayout.cshtml";
+    ViewData["Title"] = "Projeler";
+    ViewData["MetaTitle"] = Model.Seo?.MetaTitle ?? "Projeler";
+    ViewData["MetaDescription"] = Model.Seo?.MetaDescription;
+    ViewData["ActiveThemeCss"] = Model.ActiveThemeCss;
+}
+
+<section class="section">
+    <div class="container">
+        <div class="text-center mb-5 fade-up">
+            <p class="section-subtitle">@Localizer["SectionLabel"]</p>
+            <h2 class="section-title">@Localizer["PageTitle"]</h2>
+            <div class="section-divider mx-auto"></div>
+        </div>
+
+        @if (Model.Categories.Count > 0)
+        {
+            <div class="d-flex flex-wrap justify-content-center gap-2 mb-5 fade-up">
+                <a href="/projeler" class="btn-outline-modern text-decoration-none" style="padding:.4rem 1.2rem;font-size:.85rem;@(string.IsNullOrEmpty(Model.CurrentCategory) ? "background:var(--primary);color:#fff" : "")">
+                    @Localizer["AllCategoriesLink"]
+                </a>
+                @foreach (var cat in Model.Categories)
+                {
+                    <a href="/projeler?category=@cat.Slug" class="btn-outline-modern text-decoration-none" style="padding:.4rem 1.2rem;font-size:.85rem;@(Model.CurrentCategory == cat.Slug ? "background:var(--primary);color:#fff" : "")">
+                        @cat.Name
+                    </a>
+                }
+            </div>
+        }
+
+        @if (Model.Projects.Items.Count == 0)
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="fa fa-diagram-project fa-3x opacity-25 mb-3"></i>
+                <p>@Localizer["NoProjectsMessage"]</p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var project in Model.Projects.Items)
+                {
+                    <div class="col-md-6 col-lg-4 fade-up">
+                        <div class="project-card card-modern">
+                            @if (!string.IsNullOrEmpty(project.CoverImageUrl))
+                            {
+                                <img src="@project.CoverImageUrl" alt="@project.Title" />
+                            }
+                            else
+                            {
+                                <div style="height:240px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center">
+                                    <i class="fa fa-code fa-3x text-white opacity-50"></i>
+                                </div>
+                            }
+                            <div class="project-overlay text-white">
+                                <div>
+                                    <h5 class="fw-bold mb-1">@project.Title</h5>
+                                    <p class="small opacity-75 mb-2">@project.ShortDescription</p>
+                                    <a href="/projeler/@project.Slug" class="btn-primary-modern text-decoration-none" style="padding:.4rem 1rem;font-size:.8rem">
+                                        <i class="fa fa-eye"></i> @Localizer["DetailButton"]
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="p-3 pb-4">
+                                <h6 class="fw-bold mb-1">@project.Title</h6>
+                                <p class="small text-muted mb-2">@project.ShortDescription</p>
+                                @if (project.Technologies?.Count > 0)
+                                {
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach (var tech in project.Technologies.Take(4))
+                                        {
+                                            <span class="badge rounded-pill" style="background:rgba(176,135,106,.1);color:var(--primary);font-size:.7rem">@tech.Name</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (Model.Projects.TotalPages > 1)
+            {
+                <nav class="mt-5">
+                    <ul class="pagination justify-content-center">
+                        @for (var p = 1; p <= Model.Projects.TotalPages; p++)
+                        {
+                            <li class="page-item @(p == Model.Projects.PageNumber ? "active" : "")">
+                                <a class="page-link" style="@(p == Model.Projects.PageNumber ? "background:var(--primary);border-color:var(--primary)" : "color:var(--primary)")"
+                                   href="/projeler?page=@p@(string.IsNullOrEmpty(Model.CurrentCategory) ? "" : $"&category={Model.CurrentCategory}")">
+                                    @p
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+    </div>
+</section>

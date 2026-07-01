@@ -1,0 +1,51 @@
+@model IList<PortfolioApp.DTO.DTOs.Site.ThemeDto>
+@{
+    ViewData["Title"] = "Tema Yönetimi";
+}
+
+<div class="row g-3">
+    @foreach (var theme in Model ?? [])
+    {
+        <div class="col-md-4 col-lg-3">
+            <div class="card h-100 @(theme.IsActive ? "border-primary" : "")">
+                <div class="card-body text-center p-3">
+                    <div class="mb-3" style="height:80px;border-radius:8px;overflow:hidden;background:#f8f9fa">
+                        <div style="height:25px;background:@GetThemeColor(theme.FolderName)"></div>
+                        <div class="p-2">
+                            <div style="height:10px;border-radius:4px;background:#e9ecef;margin-bottom:5px"></div>
+                            <div style="height:10px;border-radius:4px;background:#e9ecef;width:70%"></div>
+                        </div>
+                    </div>
+                    <h6 class="fw-bold mb-1">@theme.Name</h6>
+                    @if (theme.IsActive)
+                    {
+                        <span class="badge bg-primary mb-2"><i class="fa fa-check me-1"></i>Aktif Tema</span>
+                    }
+                    else
+                    {
+                        <form method="post" asp-action="Activate" asp-route-id="@theme.Id">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fa fa-wand-magic-sparkles me-1"></i>Aktif Et
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    private static string GetThemeColor(string folder) => folder switch
+    {
+        "Modern" => "#d4a853",
+        "Premium" => "#1a1a2e",
+        "Minimal" => "#6b7280",
+        "Creative" => "#f59e0b",
+        "Corporate" => "#2563eb",
+        "Dark" => "#111827",
+        "Elegant" => "#9d8ec4",
+        _ => "#6c757d"
+    };
+}

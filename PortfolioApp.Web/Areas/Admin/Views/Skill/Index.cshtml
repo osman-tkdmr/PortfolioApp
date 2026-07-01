@@ -1,0 +1,128 @@
+@model IList<PortfolioApp.DTO.DTOs.Portfolio.SkillCategoryDto>
+@{
+    ViewData["Title"] = "Yetenekler";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-chart-bar me-2 text-primary"></i>Yetenekler</h5>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+            <i class="fa fa-folder-plus me-1"></i>Kategori Ekle
+        </button>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createSkillModal">
+            <i class="fa fa-plus me-1"></i>Yetenek Ekle
+        </button>
+    </div>
+</div>
+
+@foreach (var cat in Model ?? [])
+{
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-semibold"><i class="@cat.IconClass me-2"></i>@cat.Name</span>
+            <div class="d-flex gap-2">
+                <span class="badge bg-primary">@cat.Skills.Count yetenek</span>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteCat(@cat.Id)"><i class="fa fa-trash"></i></button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr><th>Yetenek</th><th>Seviye</th><th>Yüzde</th><th>İşlem</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var skill in cat.Skills)
+                    {
+                        <tr>
+                            <td>@skill.Name</td>
+                            <td>@skill.Level</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height:6px">
+                                        <div class="progress-bar" style="width:@skill.Percentage%;background:var(--bs-primary)"></div>
+                                    </div>
+                                    <span class="small text-muted">@skill.Percentage%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteSkill(@skill.Id)"><i class="fa fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Create Category Modal -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-action="CreateCategory">
+                @Html.AntiForgeryToken()
+                <div class="modal-header"><h5 class="modal-title">Kategori Ekle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-12"><label class="form-label fw-semibold">Kategori Adı *</label><input name="Name" class="form-control" required /></div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">İkon Sınıfı</label><input name="IconClass" class="form-control" placeholder="fab fa-html5" /></div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">Sıra</label><input name="DisplayOrder" type="number" class="form-control" value="0" /></div>
+                    <div class="col-12"><div class="form-check form-switch"><input name="IsActive" type="checkbox" class="form-check-input" value="true" checked /><label class="form-check-label">Aktif</label></div></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary">Kaydet</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Skill Modal -->
+<div class="modal fade" id="createSkillModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-action="CreateSkill">
+                @Html.AntiForgeryToken()
+                <div class="modal-header"><h5 class="modal-title">Yetenek Ekle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-12"><label class="form-label fw-semibold">Yetenek Adı *</label><input name="Name" class="form-control" required /></div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Kategori *</label>
+                        <select name="SkillCategoryId" class="form-select" required>
+                            <option value="">-- Seçin --</option>
+                            @foreach (var cat in Model ?? [])
+                            {
+                                <option value="@cat.Id">@cat.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Yüzde (0-100)</label>
+                        <input name="Percentage" type="number" min="0" max="100" class="form-control" value="80" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">İkon Sınıfı</label>
+                        <input name="IconClass" class="form-control" placeholder="fab fa-react" />
+                    </div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">Sıra</label><input name="DisplayOrder" type="number" class="form-control" value="0" /></div>
+                    <div class="col-12"><div class="form-check form-switch"><input name="IsActive" type="checkbox" class="form-check-input" value="true" checked /><label class="form-check-label">Aktif</label></div></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary">Kaydet</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function deleteSkill(id) {
+    Swal.fire({ title: 'Silmek istediğinize emin misiniz?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Evet, Sil', cancelButtonText: 'İptal', confirmButtonColor: '#dc3545' }).then(r => {
+        if (!r.isConfirmed) return;
+        fetch(`/Admin/Skill/DeleteSkill/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]').value } }).then(() => location.reload());
+    });
+}
+function deleteCat(id) {
+    Swal.fire({ title: 'Kategori ve yetenekleri silinecek!', icon: 'warning', showCancelButton: true, confirmButtonText: 'Evet, Sil', cancelButtonText: 'İptal', confirmButtonColor: '#dc3545' }).then(r => {
+        if (!r.isConfirmed) return;
+        fetch(`/Admin/Skill/DeleteCategory/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]').value } }).then(() => location.reload());
+    });
+}
+</script>
+}

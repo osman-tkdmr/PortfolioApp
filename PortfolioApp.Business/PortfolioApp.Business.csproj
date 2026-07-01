@@ -1,14 +1,25 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <ProjectReference Include="..\PortfolioApp.Core\PortfolioApp.Core.csproj" />
-    <ProjectReference Include="..\PortfolioApp.DataAccess\PortfolioApp.DataAccess.csproj" />
-  </ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>PortfolioApp.Business</RootNamespace>
+    <AssemblyName>PortfolioApp.Business</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="16.*" />
+    <PackageReference Include="FluentValidation" Version="11.*" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.*" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PortfolioApp.DataAccess\PortfolioApp.DataAccess.csproj" />
+    <ProjectReference Include="..\PortfolioApp.Entity\PortfolioApp.Entity.csproj" />
+    <ProjectReference Include="..\PortfolioApp.DTO\PortfolioApp.DTO.csproj" />
+    <ProjectReference Include="..\PortfolioApp.Core\PortfolioApp.Core.csproj" />
+  </ItemGroup>
 
 </Project>

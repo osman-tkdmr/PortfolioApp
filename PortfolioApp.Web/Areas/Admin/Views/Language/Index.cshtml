@@ -1,0 +1,129 @@
+@model IList<PortfolioApp.DTO.DTOs.Portfolio.LanguageDto>
+@{
+    ViewData["Title"] = "Diller";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-language me-2 text-primary"></i>Diller</h5>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="fa fa-plus me-1"></i>Yeni Ekle
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr><th>Dil</th><th>Seviye</th><th>Yüzde</th><th>Durum</th><th>İşlem</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model ?? [])
+                {
+                    <tr>
+                        <td class="fw-semibold">@item.FlagEmoji @item.Name</td>
+                        <td>@item.Level</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height:6px;min-width:80px">
+                                    <div class="progress-bar" style="width:@item.Percentage%;background:var(--bs-primary)"></div>
+                                </div>
+                                <span class="small text-muted">@item.Percentage%</span>
+                            </div>
+                        </td>
+                        <td><span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">@(item.IsActive ? "Aktif" : "Pasif")</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editItem(@item.Id)"><i class="fa fa-pen"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(@item.Id)"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-action="Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header"><h5 class="modal-title">Yeni Dil</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-8"><label class="form-label fw-semibold">Dil Adı *</label><input name="Name" class="form-control" required /></div>
+                    <div class="col-md-4"><label class="form-label fw-semibold">Bayrak Emoji</label><input name="FlagEmoji" class="form-control" placeholder="🇹🇷" /></div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Seviye</label>
+                        <select name="Level" class="form-select">
+                            <option value="0">Başlangıç</option>
+                            <option value="1">Temel</option>
+                            <option value="2">Orta</option>
+                            <option value="3">İleri</option>
+                            <option value="4">Ana Dil</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">Yüzde (0-100)</label><input name="Percentage" type="number" min="0" max="100" class="form-control" value="80" /></div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">Sıra</label><input name="DisplayOrder" type="number" class="form-control" value="0" /></div>
+                    <div class="col-md-6 d-flex align-items-end"><div class="form-check form-switch"><input name="IsActive" type="checkbox" class="form-check-input" value="true" checked /><label class="form-check-label">Aktif</label></div></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary">Kaydet</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" id="editForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editId" name="Id" />
+                <div class="modal-header"><h5 class="modal-title">Dil Düzenle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-8"><label class="form-label fw-semibold">Dil Adı *</label><input id="editName" name="Name" class="form-control" required /></div>
+                    <div class="col-md-4"><label class="form-label fw-semibold">Bayrak</label><input id="editFlagEmoji" name="FlagEmoji" class="form-control" /></div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Seviye</label>
+                        <select id="editLevel" name="Level" class="form-select">
+                            <option value="0">Başlangıç</option>
+                            <option value="1">Temel</option>
+                            <option value="2">Orta</option>
+                            <option value="3">İleri</option>
+                            <option value="4">Ana Dil</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">Yüzde</label><input id="editPercentage" name="Percentage" type="number" min="0" max="100" class="form-control" /></div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">Sıra</label><input id="editDisplayOrder" name="DisplayOrder" type="number" class="form-control" /></div>
+                    <div class="col-md-6 d-flex align-items-end"><div class="form-check form-switch"><input id="editIsActive" name="IsActive" type="checkbox" class="form-check-input" value="true" /><label class="form-check-label">Aktif</label></div></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary">Güncelle</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const items = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model ?? []));
+function editItem(id) {
+    const item = items.find(i => i.Id === id);
+    if (!item) return;
+    document.getElementById('editId').value = item.Id;
+    document.getElementById('editName').value = item.Name;
+    document.getElementById('editFlagEmoji').value = item.FlagEmoji ?? '';
+    document.getElementById('editLevel').value = item.Level;
+    document.getElementById('editPercentage').value = item.Percentage;
+    document.getElementById('editDisplayOrder').value = item.DisplayOrder;
+    document.getElementById('editIsActive').checked = item.IsActive;
+    document.getElementById('editForm').action = `/Admin/Language/Edit/${id}`;
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+function deleteItem(id) {
+    Swal.fire({ title: 'Silmek istediğinize emin misiniz?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Evet, Sil', cancelButtonText: 'İptal', confirmButtonColor: '#dc3545' }).then(r => {
+        if (!r.isConfirmed) return;
+        fetch(`/Admin/Language/Delete/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]').value } }).then(() => location.reload());
+    });
+}
+</script>
+}

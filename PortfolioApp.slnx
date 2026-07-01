@@ -1,2 +1,8 @@
 <Solution>
+  <Project Path="PortfolioApp.Web/PortfolioApp.Web.csproj" />
+  <Project Path="PortfolioApp.Business/PortfolioApp.Business.csproj" />
+  <Project Path="PortfolioApp.DataAccess/PortfolioApp.DataAccess.csproj" />
+  <Project Path="PortfolioApp.Entity/PortfolioApp.Entity.csproj" />
+  <Project Path="PortfolioApp.DTO/PortfolioApp.DTO.csproj" />
+  <Project Path="PortfolioApp.Core/PortfolioApp.Core.csproj" />
 </Solution>

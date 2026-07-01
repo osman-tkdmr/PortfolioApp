@@ -1,0 +1,106 @@
+@model IList<PortfolioApp.DTO.DTOs.Site.SocialMediaDto>
+@{
+    ViewData["Title"] = "Sosyal Medya";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-share-nodes me-2 text-primary"></i>Sosyal Medya</h5>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="fa fa-plus me-1"></i>Yeni Ekle
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr><th>Platform</th><th>URL</th><th>Durum</th><th>İşlem</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model ?? [])
+                {
+                    <tr>
+                        <td>
+                            <i class="@item.IconClass fa-lg me-2" style="color:@item.Color"></i>
+                            <span class="fw-semibold">@item.Platform</span>
+                        </td>
+                        <td><a href="@item.Url" target="_blank" class="text-muted small">@item.Url</a></td>
+                        <td><span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">@(item.IsActive ? "Aktif" : "Pasif")</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editItem(@item.Id)"><i class="fa fa-pen"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(@item.Id)"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-action="Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header"><h5 class="modal-title">Yeni Sosyal Medya</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-6"><label class="form-label fw-semibold">Platform *</label><input name="Platform" class="form-control" placeholder="GitHub" required /></div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">İkon Sınıfı</label><input name="IconClass" class="form-control" placeholder="fab fa-github" /></div>
+                    <div class="col-12"><label class="form-label fw-semibold">URL *</label><input name="Url" type="url" class="form-control" required /></div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">Renk</label><input name="Color" type="color" class="form-control form-control-color" value="#333333" /></div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">Sıra</label><input name="DisplayOrder" type="number" class="form-control" value="0" /></div>
+                    <div class="col-12"><div class="form-check form-switch"><input name="IsActive" type="checkbox" class="form-check-input" value="true" checked /><label class="form-check-label">Aktif</label></div></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary">Kaydet</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" id="editForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editId" name="Id" />
+                <div class="modal-header"><h5 class="modal-title">Düzenle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-6"><label class="form-label fw-semibold">Platform *</label><input id="editPlatform" name="Platform" class="form-control" required /></div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">İkon Sınıfı</label><input id="editIconClass" name="IconClass" class="form-control" /></div>
+                    <div class="col-12"><label class="form-label fw-semibold">URL *</label><input id="editUrl" name="Url" type="url" class="form-control" required /></div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">Renk</label><input id="editColor" name="Color" type="color" class="form-control form-control-color" /></div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">Sıra</label><input id="editDisplayOrder" name="DisplayOrder" type="number" class="form-control" /></div>
+                    <div class="col-12"><div class="form-check form-switch"><input id="editIsActive" name="IsActive" type="checkbox" class="form-check-input" value="true" /><label class="form-check-label">Aktif</label></div></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary">Güncelle</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const items = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model ?? []));
+function editItem(id) {
+    const item = items.find(i => i.Id === id);
+    if (!item) return;
+    document.getElementById('editId').value = item.Id;
+    document.getElementById('editPlatform').value = item.Platform;
+    document.getElementById('editIconClass').value = item.IconClass ?? '';
+    document.getElementById('editUrl').value = item.Url;
+    document.getElementById('editColor').value = item.Color ?? '#333333';
+    document.getElementById('editDisplayOrder').value = item.DisplayOrder;
+    document.getElementById('editIsActive').checked = item.IsActive;
+    document.getElementById('editForm').action = `/Admin/SocialMedia/Edit/${id}`;
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+function deleteItem(id) {
+    Swal.fire({ title: 'Silmek istediğinize emin misiniz?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Evet, Sil', cancelButtonText: 'İptal', confirmButtonColor: '#dc3545' }).then(r => {
+        if (!r.isConfirmed) return;
+        fetch(`/Admin/SocialMedia/Delete/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]').value } }).then(() => location.reload());
+    });
+}
+</script>
+}

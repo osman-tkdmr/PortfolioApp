@@ -1,0 +1,83 @@
+@model PortfolioApp.DTO.DTOs.Site.SiteSettingsDto
+@{
+    ViewData["Title"] = "Site Ayarları";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-gear me-2 text-primary"></i>Site Ayarları</h5>
+</div>
+
+<form method="post" asp-action="Update">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">Genel Bilgiler</div>
+                <div class="card-body row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Site Adı *</label>
+                        <input asp-for="SiteName" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Site Başlığı</label>
+                        <input asp-for="SiteTitle" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Site Açıklaması</label>
+                        <textarea asp-for="SiteDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Logo URL</label>
+                        <input asp-for="LogoUrl" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Favicon URL</label>
+                        <input asp-for="FaviconUrl" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Footer Metni</label>
+                        <input asp-for="FooterText" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Telif Hakkı Metni</label>
+                        <input asp-for="CopyrightText" class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Analytics & Dil</div>
+                <div class="card-body row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Google Analytics ID</label>
+                        <input asp-for="GoogleAnalyticsId" class="form-control" placeholder="G-XXXXXXXXXX" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Dil</label>
+                        <select asp-for="Language" class="form-select">
+                            <option value="tr">Türkçe</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">Bakım Modu</div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input asp-for="IsMaintenanceMode" class="form-check-input" role="switch" />
+                        <label asp-for="IsMaintenanceMode" class="form-check-label fw-semibold">Bakım Modunu Aktifleştir</label>
+                    </div>
+                    <label class="form-label fw-semibold small">Bakım Mesajı</label>
+                    <textarea asp-for="MaintenanceMessage" class="form-control" rows="4" placeholder="Sitemiz bakımdadır. Lütfen daha sonra tekrar ziyaret edin."></textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fa fa-floppy-disk me-1"></i>Kaydet
+            </button>
+        </div>
+    </div>
+</form>

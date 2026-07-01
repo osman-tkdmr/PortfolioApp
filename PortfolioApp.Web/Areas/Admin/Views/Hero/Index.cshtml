@@ -1,0 +1,92 @@
+@model PortfolioApp.DTO.DTOs.Site.HeroSectionDto
+@{
+    ViewData["Title"] = "Hero Bölümü";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-star me-2 text-primary"></i>Hero Bölümü</h5>
+</div>
+
+<form method="post" asp-action="Update" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">İçerik</div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Başlık</label>
+                        <input asp-for="Title" class="form-control" placeholder="Frontend Developer" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Alt Başlık</label>
+                        <input asp-for="Subtitle" class="form-control" placeholder="Merhaba, Ben..." />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Açıklama</label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">1. Buton Metni</label>
+                        <input asp-for="CtaButtonText" class="form-control" placeholder="Projelerimi Gör" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">1. Buton URL</label>
+                        <input asp-for="CtaButtonUrl" class="form-control" placeholder="#portfolio" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">2. Buton Metni</label>
+                        <input asp-for="SecondaryButtonText" class="form-control" placeholder="CV İndir" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">2. Buton URL</label>
+                        <input asp-for="SecondaryButtonUrl" class="form-control" placeholder="/uploads/cv.pdf" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Typewriter Metinleri <small class="text-muted">(virgülle ayırın)</small></label>
+                        <input asp-for="TypewriterTexts" class="form-control" placeholder="Web Developer, UI/UX Designer, Freelancer" />
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input asp-for="ShowTypewriter" class="form-check-input" role="switch" />
+                            <label asp-for="ShowTypewriter" class="form-check-label">Typewriter Animasyonu Göster</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">Profil Görseli</div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model?.ProfileImageUrl))
+                    {
+                        <img src="@Model.ProfileImageUrl" class="img-fluid rounded-circle mb-3" style="max-height:200px;width:200px;object-fit:cover" />
+                    }
+                    <input type="file" name="profileImage" class="form-control" accept="image/*" />
+                    <input type="hidden" asp-for="ProfileImageUrl" />
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header">Arka Plan Görseli</div>
+                <div class="card-body">
+                    <input type="file" name="backgroundImage" class="form-control" accept="image/*" />
+                    <input type="hidden" asp-for="BackgroundImageUrl" />
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header">Durum</div>
+                <div class="card-body">
+                    <div class="form-check form-switch">
+                        <input asp-for="IsActive" class="form-check-input" role="switch" />
+                        <label asp-for="IsActive" class="form-check-label">Aktif</label>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fa fa-floppy-disk me-1"></i>Kaydet
+            </button>
+        </div>
+    </div>
+</form>

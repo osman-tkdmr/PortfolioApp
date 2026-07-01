@@ -1,0 +1,45 @@
+@model PortfolioApp.DTO.ViewModels.Public.HomeViewModel
+@if (Model?.Testimonials?.Count > 0)
+{
+    <section id="testimonials" class="section section-alt">
+        <div class="container">
+            <div class="text-center mb-5 fade-up">
+                <p class="section-subtitle">@Localizer["SectionLabel"]</p>
+                <h2 class="section-title">@Localizer["SectionTitle"]</h2>
+                <div class="section-divider mx-auto"></div>
+            </div>
+            <div class="row g-4">
+                @foreach (var t in Model.Testimonials)
+                {
+                    <div class="col-md-6 col-lg-4 fade-up">
+                        <div class="testimonial-card card-modern h-100">
+                            <div class="d-flex gap-1 mb-3">
+                                @for (int i = 0; i < t.Rating; i++)
+                                {
+                                    <i class="fa fa-star fa-sm" style="color:var(--primary)"></i>
+                                }
+                            </div>
+                            <p class="text-secondary fst-italic mb-4">"@t.Content"</p>
+                            <div class="d-flex align-items-center gap-3">
+                                @if (!string.IsNullOrEmpty(t.AuthorImageUrl))
+                                {
+                                    <img src="@t.AuthorImageUrl" width="44" height="44" class="rounded-circle" style="object-fit:cover" />
+                                }
+                                else
+                                {
+                                    <div style="width:44px;height:44px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700">
+                                        @(t.AuthorName.Length > 0 ? t.AuthorName[0] : '?')
+                                    </div>
+                                }
+                                <div>
+                                    <div class="fw-semibold small">@t.AuthorName</div>
+                                    <div class="text-muted" style="font-size:.8rem">@t.AuthorTitle@(t.AuthorCompany is not null ? $", {t.AuthorCompany}" : "")</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}

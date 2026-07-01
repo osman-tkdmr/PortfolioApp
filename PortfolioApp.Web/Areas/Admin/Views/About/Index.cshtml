@@ -1,0 +1,87 @@
+@model PortfolioApp.DTO.DTOs.Portfolio.AboutDto
+@inject IConfiguration Configuration
+@{
+    ViewData["Title"] = "Hakkımda";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-user-circle me-2 text-primary"></i>Hakkımda</h5>
+</div>
+
+<form method="post" asp-action="Update" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">Genel Bilgiler</div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Başlık</label>
+                        <input asp-for="Title" class="form-control" placeholder="Hakkımda başlığı" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Alt Başlık</label>
+                        <input asp-for="Subtitle" class="form-control" placeholder="Kısa açıklama" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">İçerik</label>
+                        <textarea id="content" asp-for="Content" class="form-control" rows="10"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">Profil Görseli</div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model?.ProfileImageUrl))
+                    {
+                        <img src="@Model.ProfileImageUrl" class="img-fluid rounded mb-3" />
+                    }
+                    <input type="file" name="photo" class="form-control" accept="image/*" />
+                    <input type="hidden" asp-for="ProfileImageUrl" />
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header">CV Dosyası</div>
+                <div class="card-body">
+                    <input asp-for="CvFileUrl" class="form-control" placeholder="/uploads/cv.pdf" />
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header">İstatistikler</div>
+                <div class="card-body row g-2">
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Yıl Deneyim</label>
+                        <input asp-for="YearsOfExperience" type="number" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Tamamlanan Proje</label>
+                        <input asp-for="ProjectsCompleted" type="number" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Memnun Müşteri</label>
+                        <input asp-for="ClientsSatisfied" type="number" class="form-control" />
+                    </div>
+                    <div class="col-12 mt-1">
+                        <div class="form-check form-switch">
+                            <input asp-for="ShowStatistics" class="form-check-input" role="switch" />
+                            <label asp-for="ShowStatistics" class="form-check-label small">İstatistikleri Göster</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fa fa-floppy-disk me-1"></i>Kaydet
+            </button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+<script src="https://cdn.tiny.cloud/1/@Configuration["TinyMCE:ApiKey"]/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+tinymce.init({ selector: '#content', height: 400, plugins: 'lists link image code', toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter | bullist numlist | link image | code', language: 'tr_TR' });
+</script>
+}

@@ -1,0 +1,207 @@
+@model IList<PortfolioApp.DTO.DTOs.Portfolio.ExperienceDto>
+@{
+    ViewData["Title"] = "Deneyimler";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-briefcase me-2 text-primary"></i>Deneyimler</h5>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="fa fa-plus me-1"></i>Yeni Ekle
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0" id="dataTable">
+            <thead class="table-light">
+                <tr>
+                    <th>Pozisyon</th>
+                    <th>Şirket</th>
+                    <th>Başlangıç</th>
+                    <th>Bitiş</th>
+                    <th>Durum</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model ?? [])
+                {
+                    <tr>
+                        <td class="fw-semibold">@item.JobTitle</td>
+                        <td>@item.Company</td>
+                        <td>@item.StartDate.ToString("MMM yyyy")</td>
+                        <td>@(item.IsCurrent ? "Devam Ediyor" : item.EndDate?.ToString("MMM yyyy"))</td>
+                        <td><span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">@(item.IsActive ? "Aktif" : "Pasif")</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editItem(@item.Id)" title="Düzenle"><i class="fa fa-pen"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(@item.Id)" title="Sil"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" asp-action="Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Yeni Deneyim</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Pozisyon *</label>
+                        <input name="JobTitle" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Şirket *</label>
+                        <input name="Company" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Konum</label>
+                        <input name="Location" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Şirket Logo URL</label>
+                        <input name="CompanyLogoUrl" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Başlangıç Tarihi *</label>
+                        <input name="StartDate" type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Bitiş Tarihi</label>
+                        <input name="EndDate" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Açıklama</label>
+                        <textarea name="Description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Sıra</label>
+                        <input name="DisplayOrder" type="number" class="form-control" value="0" />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input name="IsCurrent" type="checkbox" class="form-check-input" role="switch" value="true" />
+                            <label class="form-check-label">Devam Ediyor</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input name="IsActive" type="checkbox" class="form-check-input" role="switch" value="true" checked />
+                            <label class="form-check-label">Aktif</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-disk me-1"></i>Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" id="editForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editId" name="Id" />
+                <div class="modal-header">
+                    <h5 class="modal-title">Deneyimi Düzenle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Pozisyon *</label>
+                        <input id="editJobTitle" name="JobTitle" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Şirket *</label>
+                        <input id="editCompany" name="Company" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Konum</label>
+                        <input id="editLocation" name="Location" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Şirket Logo URL</label>
+                        <input id="editCompanyLogoUrl" name="CompanyLogoUrl" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Başlangıç Tarihi *</label>
+                        <input id="editStartDate" name="StartDate" type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Bitiş Tarihi</label>
+                        <input id="editEndDate" name="EndDate" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Açıklama</label>
+                        <textarea id="editDescription" name="Description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Sıra</label>
+                        <input id="editDisplayOrder" name="DisplayOrder" type="number" class="form-control" />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input id="editIsCurrent" name="IsCurrent" type="checkbox" class="form-check-input" role="switch" value="true" />
+                            <label class="form-check-label">Devam Ediyor</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input id="editIsActive" name="IsActive" type="checkbox" class="form-check-input" role="switch" value="true" />
+                            <label class="form-check-label">Aktif</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-disk me-1"></i>Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const items = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model ?? []));
+
+function editItem(id) {
+    const item = items.find(i => i.Id === id);
+    if (!item) return;
+    document.getElementById('editId').value = item.Id;
+    document.getElementById('editJobTitle').value = item.JobTitle;
+    document.getElementById('editCompany').value = item.Company;
+    document.getElementById('editLocation').value = item.Location ?? '';
+    document.getElementById('editCompanyLogoUrl').value = item.CompanyLogoUrl ?? '';
+    document.getElementById('editStartDate').value = item.StartDate;
+    document.getElementById('editEndDate').value = item.EndDate ?? '';
+    document.getElementById('editDescription').value = item.Description ?? '';
+    document.getElementById('editDisplayOrder').value = item.DisplayOrder;
+    document.getElementById('editIsCurrent').checked = item.IsCurrent;
+    document.getElementById('editIsActive').checked = item.IsActive;
+    document.getElementById('editForm').action = `/Admin/Experience/Edit/${id}`;
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+
+function deleteItem(id) {
+    Swal.fire({ title: 'Silmek istediğinize emin misiniz?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Evet, Sil', cancelButtonText: 'İptal', confirmButtonColor: '#dc3545' }).then(r => {
+        if (!r.isConfirmed) return;
+        fetch(`/Admin/Experience/Delete/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]').value } })
+            .then(() => location.reload());
+    });
+}
+</script>
+}

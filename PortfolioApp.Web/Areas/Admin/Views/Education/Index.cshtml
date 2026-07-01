@@ -1,0 +1,207 @@
+@model IList<PortfolioApp.DTO.DTOs.Portfolio.EducationDto>
+@{
+    ViewData["Title"] = "Eğitim";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-graduation-cap me-2 text-primary"></i>Eğitim</h5>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="fa fa-plus me-1"></i>Yeni Ekle
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0" id="dataTable">
+            <thead class="table-light">
+                <tr>
+                    <th>Derece</th>
+                    <th>Okul</th>
+                    <th>Alan</th>
+                    <th>Yıllar</th>
+                    <th>Durum</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model ?? [])
+                {
+                    <tr>
+                        <td class="fw-semibold">@item.Degree</td>
+                        <td>@item.School</td>
+                        <td>@item.FieldOfStudy</td>
+                        <td>@item.StartDate.Year — @(item.IsCurrent ? "Devam" : item.EndDate?.Year.ToString())</td>
+                        <td><span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">@(item.IsActive ? "Aktif" : "Pasif")</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editItem(@item.Id)" title="Düzenle"><i class="fa fa-pen"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(@item.Id)" title="Sil"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" asp-action="Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Yeni Eğitim</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Derece *</label>
+                        <input name="Degree" class="form-control" placeholder="Lisans, Yüksek Lisans..." required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Okul *</label>
+                        <input name="School" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Alan</label>
+                        <input name="FieldOfStudy" class="form-control" placeholder="Bilgisayar Mühendisliği" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">GPA</label>
+                        <input name="GPA" type="number" step="0.01" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Başlangıç *</label>
+                        <input name="StartDate" type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Bitiş</label>
+                        <input name="EndDate" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Açıklama</label>
+                        <textarea name="Description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Sıra</label>
+                        <input name="DisplayOrder" type="number" class="form-control" value="0" />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input name="IsCurrent" type="checkbox" class="form-check-input" value="true" />
+                            <label class="form-check-label">Devam Ediyor</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input name="IsActive" type="checkbox" class="form-check-input" value="true" checked />
+                            <label class="form-check-label">Aktif</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" id="editForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editId" name="Id" />
+                <div class="modal-header">
+                    <h5 class="modal-title">Eğitimi Düzenle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Derece *</label>
+                        <input id="editDegree" name="Degree" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Okul *</label>
+                        <input id="editSchool" name="School" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Alan</label>
+                        <input id="editFieldOfStudy" name="FieldOfStudy" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">GPA</label>
+                        <input id="editGPA" name="GPA" type="number" step="0.01" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Başlangıç *</label>
+                        <input id="editStartDate" name="StartDate" type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Bitiş</label>
+                        <input id="editEndDate" name="EndDate" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Açıklama</label>
+                        <textarea id="editDescription" name="Description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Sıra</label>
+                        <input id="editDisplayOrder" name="DisplayOrder" type="number" class="form-control" />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input id="editIsCurrent" name="IsCurrent" type="checkbox" class="form-check-input" value="true" />
+                            <label class="form-check-label">Devam Ediyor</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input id="editIsActive" name="IsActive" type="checkbox" class="form-check-input" value="true" />
+                            <label class="form-check-label">Aktif</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const items = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model ?? []));
+
+function editItem(id) {
+    const item = items.find(i => i.Id === id);
+    if (!item) return;
+    document.getElementById('editId').value = item.Id;
+    document.getElementById('editDegree').value = item.Degree;
+    document.getElementById('editSchool').value = item.School;
+    document.getElementById('editFieldOfStudy').value = item.FieldOfStudy ?? '';
+    document.getElementById('editGPA').value = item.GPA ?? '';
+    document.getElementById('editStartDate').value = item.StartDate;
+    document.getElementById('editEndDate').value = item.EndDate ?? '';
+    document.getElementById('editDescription').value = item.Description ?? '';
+    document.getElementById('editDisplayOrder').value = item.DisplayOrder;
+    document.getElementById('editIsCurrent').checked = item.IsCurrent;
+    document.getElementById('editIsActive').checked = item.IsActive;
+    document.getElementById('editForm').action = `/Admin/Education/Edit/${id}`;
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+
+function deleteItem(id) {
+    Swal.fire({ title: 'Silmek istediğinize emin misiniz?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Evet, Sil', cancelButtonText: 'İptal', confirmButtonColor: '#dc3545' }).then(r => {
+        if (!r.isConfirmed) return;
+        fetch(`/Admin/Education/Delete/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]').value } })
+            .then(() => location.reload());
+    });
+}
+</script>
+}

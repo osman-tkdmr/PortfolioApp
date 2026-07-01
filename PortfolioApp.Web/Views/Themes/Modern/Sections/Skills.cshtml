@@ -1,0 +1,58 @@
+@model PortfolioApp.DTO.ViewModels.Public.HomeViewModel
+<section id="skills" class="section skills-section">
+    <div class="container">
+        <div class="text-center mb-5 fade-up">
+            <p class="section-subtitle">@Localizer["SectionLabel"]</p>
+            <h2 class="section-title">@Localizer["SectionTitle"]</h2>
+            <div class="section-divider mx-auto"></div>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var category in Model?.SkillCategories ?? [])
+            {
+                <div class="col-md-6 fade-up">
+                    <div class="card-modern p-4 h-100">
+                        <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                            @if (!string.IsNullOrEmpty(category.IconClass))
+                            {
+                                <i class="@category.IconClass" style="color:var(--primary)"></i>
+                            }
+                            @category.Name
+                        </h5>
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var skill in category.Skills ?? [])
+                            {
+                                <div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="small fw-semibold">@skill.Name</span>
+                                        <span class="small text-muted">@skill.Level%</span>
+                                    </div>
+                                    <div class="skill-bar">
+                                        <div class="skill-fill" style="width:0" data-width="@skill.Level"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Languages -->
+        @if (Model?.Languages?.Count > 0)
+        {
+            <div class="mt-5 fade-up">
+                <h4 class="fw-bold mb-4 text-center">@Localizer["LanguageSkillsTitle"]</h4>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    @foreach (var lang in Model.Languages)
+                    {
+                        <div class="card-modern px-4 py-3 text-center" style="min-width:140px">
+                            <div class="fw-bold mb-1">@lang.Name</div>
+                            <div class="small" style="color:var(--primary)">@lang.Level</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</section>

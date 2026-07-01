@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(ViewData["MetaTitle"] as string ?? ViewData["Title"] as string ?? "Portfolio")</title>
+    @if (ViewData["MetaDescription"] is string desc && !string.IsNullOrEmpty(desc))
+    {
+        <meta name="description" content="@desc" />
+    }
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="/css/themes/@(ViewData["ActiveThemeCss"] as string ?? "modern.css")" />
+</head>
+@{
+    var currentPath = Context.Request.Path.Value ?? "/";
+    Func<string, bool> isActive = href => href == "/" ? currentPath == "/" : currentPath.StartsWith(href, StringComparison.OrdinalIgnoreCase);
+}
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand" href="/">Portfolio<span>.</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center gap-1">
+                <li class="nav-item"><a class="nav-link" href="/">@SharedLocalizer["NavHome"]</a></li>
+                <li class="nav-item"><a class="nav-link" href="/#about">@SharedLocalizer["NavAbout"]</a></li>
+                <li class="nav-item"><a class="nav-link" href="/projeler">@SharedLocalizer["NavPortfolio"]</a></li>
+                <li class="nav-item"><a class="nav-link" href="/blog">@SharedLocalizer["NavBlog"]</a></li>
+                <li class="nav-item"><a class="nav-link" href="/#contact">@SharedLocalizer["NavContact"]</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Bottom Navigation (mobile only, desktop navbar untouched) -->
+<nav class="bottom-nav">
+    <a href="/" class="bottom-nav-item @(isActive("/") ? "active" : "")"><i class="fa fa-house"></i><span>@SharedLocalizer["NavHome"]</span></a>
+    <a href="/#about" class="bottom-nav-item"><i class="fa fa-user"></i><span>@SharedLocalizer["NavAbout"]</span></a>
+    <a href="/projeler" class="bottom-nav-item @(isActive("/projeler") ? "active" : "")"><i class="fa fa-diagram-project"></i><span>@SharedLocalizer["NavPortfolio"]</span></a>
+    <a href="/blog" class="bottom-nav-item @(isActive("/blog") ? "active" : "")"><i class="fa fa-newspaper"></i><span>@SharedLocalizer["NavBlog"]</span></a>
+    <a href="/#contact" class="bottom-nav-item"><i class="fa fa-envelope"></i><span>@SharedLocalizer["NavContact"]</span></a>
+</nav>
+
+<!-- Page content -->
+<div style="padding-top:2rem">
+    @RenderBody()
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <div class="fw-bold text-white mb-1" style="font-family:var(--font-heading)">
+                    Portfolio<span style="color:var(--primary)">.</span>
+                </div>
+                <div class="small">© @DateTime.Now.Year Portfolio. @SharedLocalizer["FooterRights"]</div>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <a href="/" class="text-decoration-none" style="color:rgba(255,255,255,.6)">@SharedLocalizer["BackToHome"]</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    window.addEventListener('scroll', () => {
+        document.getElementById('mainNav')?.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: .15 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

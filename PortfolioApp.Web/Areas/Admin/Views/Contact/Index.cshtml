@@ -1,0 +1,93 @@
+@model IList<PortfolioApp.DTO.DTOs.Site.ContactMessageDto>
+@{
+    ViewData["Title"] = "İletişim Mesajları";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-envelope me-2 text-primary"></i>İletişim Mesajları</h5>
+    <a asp-action="Info" class="btn btn-outline-primary btn-sm"><i class="fa fa-address-card me-1"></i>İletişim Bilgileri</a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0" id="dataTable">
+            <thead class="table-light">
+                <tr><th>Gönderen</th><th>Konu</th><th>Tarih</th><th>Durum</th><th>İşlem</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model ?? [])
+                {
+                    <tr class="@(item.IsRead ? "" : "fw-semibold")">
+                        <td>
+                            <div>@item.SenderName</div>
+                            <div class="small text-muted">@item.SenderEmail</div>
+                        </td>
+                        <td>@item.Subject</td>
+                        <td class="small text-muted">@item.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
+                        <td>
+                            @if (!item.IsRead) { <span class="badge bg-warning text-dark">Okunmadı</span> }
+                            else if (item.IsReplied) { <span class="badge bg-success">Yanıtlandı</span> }
+                            else { <span class="badge bg-info">Okundu</span> }
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewMessage(@item.Id)" title="Görüntüle"><i class="fa fa-eye"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(@item.Id)" title="Sil"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalSubject">Mesaj</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="text-muted small">Gönderen</div>
+                    <div id="modalSender" class="fw-semibold"></div>
+                    <div id="modalEmail" class="text-muted small"></div>
+                </div>
+                <div class="mb-3">
+                    <div class="text-muted small">Tarih</div>
+                    <div id="modalDate" class="small"></div>
+                </div>
+                <hr />
+                <div id="modalMessage" class="lh-lg"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <a id="modalReplyLink" href="#" class="btn btn-primary"><i class="fa fa-reply me-1"></i>E-posta ile Yanıtla</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const messages = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model ?? []));
+function viewMessage(id) {
+    const msg = messages.find(m => m.Id === id);
+    if (!msg) return;
+    document.getElementById('modalSubject').textContent = msg.Subject;
+    document.getElementById('modalSender').textContent = msg.SenderName;
+    document.getElementById('modalEmail').textContent = msg.SenderEmail;
+    document.getElementById('modalDate').textContent = new Date(msg.CreatedAt).toLocaleString('tr-TR');
+    document.getElementById('modalMessage').textContent = msg.Message;
+    document.getElementById('modalReplyLink').href = `mailto:${msg.SenderEmail}?subject=RE: ${msg.Subject}`;
+    new bootstrap.Modal(document.getElementById('viewModal')).show();
+}
+function deleteItem(id) {
+    Swal.fire({ title: 'Mesajı silmek istediğinize emin misiniz?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Evet, Sil', cancelButtonText: 'İptal', confirmButtonColor: '#dc3545' }).then(r => {
+        if (!r.isConfirmed) return;
+        fetch(`/Admin/Contact/Delete/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]').value } }).then(() => location.reload());
+    });
+}
+</script>
+}

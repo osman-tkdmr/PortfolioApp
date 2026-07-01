@@ -1,0 +1,61 @@
+@model PortfolioApp.DTO.DTOs.Site.SeoSettingsUpdateDto
+@{
+    ViewData["Title"] = "SEO Düzenle";
+}
+
+<div class="d-flex align-items-center mb-4">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3"><i class="fa fa-arrow-left"></i></a>
+    <h5 class="mb-0 fw-bold">SEO Düzenle — /@Model.PageSlug</h5>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" asp-action="Edit">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="PageSlug" />
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Meta Başlık *</label>
+                    <input asp-for="MetaTitle" class="form-control" required />
+                    <div class="form-text">50-60 karakter önerilir</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Meta Açıklama</label>
+                    <textarea asp-for="MetaDescription" class="form-control" rows="3"></textarea>
+                    <div class="form-text">150-160 karakter önerilir</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Anahtar Kelimeler</label>
+                    <input asp-for="MetaKeywords" class="form-control" placeholder="kelime1, kelime2, kelime3" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">OG Başlık</label>
+                    <input asp-for="OgTitle" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">OG Görsel URL</label>
+                    <input asp-for="OgImageUrl" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">OG Açıklama</label>
+                    <textarea asp-for="OgDescription" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Canonical URL</label>
+                    <input asp-for="CanonicalUrl" class="form-control" placeholder="https://..." />
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check form-switch"><input asp-for="NoIndex" class="form-check-input" role="switch" /><label asp-for="NoIndex" class="form-check-label">NoIndex</label></div>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check form-switch"><input asp-for="NoFollow" class="form-check-input" role="switch" /><label asp-for="NoFollow" class="form-check-label">NoFollow</label></div>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-disk me-1"></i>Kaydet</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>

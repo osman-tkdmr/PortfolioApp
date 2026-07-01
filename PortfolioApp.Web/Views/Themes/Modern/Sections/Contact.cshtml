@@ -1,0 +1,140 @@
+@model PortfolioApp.DTO.ViewModels.Public.HomeViewModel
+<section id="contact" class="section section-alt">
+    <div class="container">
+        <div class="text-center mb-5 fade-up">
+            <p class="section-subtitle">@Localizer["SectionLabel"]</p>
+            <h2 class="section-title">@Localizer["SectionTitle"]</h2>
+            <div class="section-divider mx-auto"></div>
+        </div>
+
+        <div class="row g-5">
+            <!-- Contact Info -->
+            <div class="col-lg-5 fade-up">
+                <div class="d-flex flex-column gap-4">
+                    @if (!string.IsNullOrEmpty(Model?.ContactInfo?.Email))
+                    {
+                        <div class="d-flex align-items-start gap-3">
+                            <div style="width:50px;height:50px;border-radius:12px;background:rgba(212,168,83,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                                <i class="fa fa-envelope" style="color:var(--primary)"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold mb-1">@Localizer["EmailLabel"]</div>
+                                <a href="mailto:@Model.ContactInfo.Email" class="text-muted text-decoration-none">@Model.ContactInfo.Email</a>
+                            </div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model?.ContactInfo?.Phone))
+                    {
+                        <div class="d-flex align-items-start gap-3">
+                            <div style="width:50px;height:50px;border-radius:12px;background:rgba(212,168,83,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                                <i class="fa fa-phone" style="color:var(--primary)"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold mb-1">@Localizer["PhoneLabel"]</div>
+                                <a href="tel:@Model.ContactInfo.Phone" class="text-muted text-decoration-none">@Model.ContactInfo.Phone</a>
+                            </div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model?.ContactInfo?.City) || !string.IsNullOrEmpty(Model?.ContactInfo?.Country))
+                    {
+                        <div class="d-flex align-items-start gap-3">
+                            <div style="width:50px;height:50px;border-radius:12px;background:rgba(212,168,83,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                                <i class="fa fa-location-dot" style="color:var(--primary)"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold mb-1">@Localizer["LocationLabel"]</div>
+                                <span class="text-muted">@string.Join(", ", new[]{ Model?.ContactInfo?.City, Model?.ContactInfo?.Country }.Where(s => !string.IsNullOrEmpty(s)))</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (Model?.SocialMediaLinks?.Count > 0)
+                {
+                    <div class="mt-5">
+                        <h6 class="fw-bold mb-3">@Localizer["SocialMediaLabel"]</h6>
+                        <div class="d-flex gap-3">
+                            @foreach (var social in Model.SocialMediaLinks)
+                            {
+                                <a href="@social.Url" target="_blank" rel="noopener"
+                                   class="d-flex align-items-center justify-content-center rounded-3 text-decoration-none"
+                                   style="width:44px;height:44px;background:rgba(212,168,83,.1);color:var(--primary);transition:all .2s;font-size:1.1rem"
+                                   onmouseover="this.style.background='var(--primary)';this.style.color='#fff'"
+                                   onmouseout="this.style.background='rgba(212,168,83,.1)';this.style.color='var(--primary)'">
+                                    <i class="@social.IconClass"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Contact Form -->
+            <div class="col-lg-7 fade-up" style="transition-delay:.15s">
+                <div class="card-modern p-4 p-lg-5">
+                    <div id="contactAlert" class="alert d-none" role="alert"></div>
+                    <form id="contactForm">
+                        @Html.AntiForgeryToken()
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">@Localizer["FormNameLabel"] <span class="text-danger">*</span></label>
+                                <input type="text" name="senderName" class="form-control form-control-modern" placeholder="@Localizer["FormNamePlaceholder"]" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">@Localizer["EmailLabel"] <span class="text-danger">*</span></label>
+                                <input type="email" name="senderEmail" class="form-control form-control-modern" placeholder="@Localizer["FormEmailPlaceholder"]" required />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">@Localizer["FormSubjectLabel"]</label>
+                                <input type="text" name="subject" class="form-control form-control-modern" placeholder="@Localizer["FormSubjectPlaceholder"]" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">@Localizer["FormMessageLabel"] <span class="text-danger">*</span></label>
+                                <textarea name="message" class="form-control form-control-modern" rows="5" placeholder="@Localizer["FormMessagePlaceholder"]" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn-primary-modern w-100 border-0" id="submitBtn">
+                                    <i class="fa fa-paper-plane"></i> @Localizer["SendButton"]
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.getElementById('contactForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const alert = document.getElementById('contactAlert');
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> @Localizer["Sending"]';
+
+    const formData = new FormData(this);
+    const token = formData.get('__RequestVerificationToken');
+
+    try {
+        const res = await fetch('/Home/Contact', {
+            method: 'POST',
+            headers: { 'RequestVerificationToken': token, 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(formData)
+        });
+        const data = await res.json();
+        alert.className = `alert ${data.success ? 'alert-success' : 'alert-danger'}`;
+        alert.textContent = data.message;
+        alert.classList.remove('d-none');
+        if (data.success) this.reset();
+    } catch {
+        alert.className = 'alert alert-danger';
+        alert.textContent = '@Localizer["SendError"]';
+        alert.classList.remove('d-none');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-paper-plane"></i> @Localizer["SendButton"]';
+    }
+});
+</script>

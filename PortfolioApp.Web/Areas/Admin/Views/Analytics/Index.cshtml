@@ -1,0 +1,62 @@
+@model IList<PortfolioApp.DTO.DTOs.Dashboard.VisitorChartDataDto>
+@{
+    ViewData["Title"] = "Ziyaretçi Analitiği";
+    var todayCount = ViewBag.TodayCount as int? ?? 0;
+    var totalCount = ViewBag.TotalCount as int? ?? 0;
+    var chartLabels = Model?.Select(d => d.Date.ToString("dd MMM")).ToArray() ?? [];
+    var chartData = Model?.Select(d => d.Count).ToArray() ?? [];
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-chart-line me-2 text-primary"></i>Ziyaretçi Analitiği</h5>
+    <span class="text-muted small">Son 30 gün</span>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card text-center p-3">
+            <div class="text-muted small mb-1">Toplam Ziyaret (30 gün)</div>
+            <div class="fs-2 fw-bold text-primary">@totalCount.ToString("N0")</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center p-3">
+            <div class="text-muted small mb-1">Bugünkü Ziyaret</div>
+            <div class="fs-2 fw-bold text-success">@todayCount.ToString("N0")</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center p-3">
+            <div class="text-muted small mb-1">Günlük Ortalama</div>
+            <div class="fs-2 fw-bold text-info">@(Model?.Count > 0 ? (totalCount / Model.Count).ToString("N0") : "—")</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Günlük Ziyaret Trendi</div>
+    <div class="card-body">
+        <canvas id="visitorChart" height="80"></canvas>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+new Chart(document.getElementById('visitorChart'), {
+    type: 'line',
+    data: {
+        labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(chartLabels)),
+        datasets: [{
+            label: 'Ziyaretçi',
+            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(chartData)),
+            borderColor: '#b0876a',
+            backgroundColor: 'rgba(176,135,106,.12)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+</script>
+}

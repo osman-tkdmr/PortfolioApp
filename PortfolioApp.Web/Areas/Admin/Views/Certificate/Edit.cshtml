@@ -1,0 +1,73 @@
+@model PortfolioApp.DTO.DTOs.Portfolio.CertificateDto
+@{
+    ViewData["Title"] = "Sertifika Düzenle";
+}
+
+<div class="d-flex align-items-center mb-4">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3"><i class="fa fa-arrow-left"></i></a>
+    <h5 class="mb-0 fw-bold">Sertifika Düzenle</h5>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" asp-action="Edit" asp-route-id="@Model.Id" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Sertifika Adı *</label>
+                    <input asp-for="Name" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Veren Kurum</label>
+                    <input asp-for="IssuingOrganization" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Sertifika ID</label>
+                    <input asp-for="CredentialId" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Sertifika URL</label>
+                    <input asp-for="CredentialUrl" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Veriliş Tarihi *</label>
+                    <input asp-for="IssuedDate" type="date" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Son Geçerlilik</label>
+                    <input asp-for="ExpirationDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Sıra</label>
+                    <input asp-for="DisplayOrder" type="number" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Rozet Görseli</label>
+                    @if (!string.IsNullOrEmpty(Model.BadgeImageUrl))
+                    {
+                        <div class="mb-2"><img src="@Model.BadgeImageUrl" class="img-thumbnail" style="max-height:80px" /></div>
+                    }
+                    <input type="file" name="image" class="form-control" accept="image/*" />
+                    <input type="hidden" asp-for="BadgeImageUrl" />
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check form-switch">
+                        <input asp-for="HasExpiration" class="form-check-input" role="switch" />
+                        <label asp-for="HasExpiration" class="form-check-label">Geçerlilik Süresi Var</label>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check form-switch">
+                        <input asp-for="IsActive" class="form-check-input" role="switch" />
+                        <label asp-for="IsActive" class="form-check-label">Aktif</label>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-disk me-1"></i>Güncelle</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>

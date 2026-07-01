@@ -1,0 +1,97 @@
+@model IList<PortfolioApp.DTO.DTOs.Site.MenuItemDto>
+@{
+    ViewData["Title"] = "Menü";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-bars me-2 text-primary"></i>Menü Öğeleri</h5>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="fa fa-plus me-1"></i>Yeni Öğe
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0" id="dataTable">
+            <thead class="table-light">
+                <tr><th>Başlık</th><th>URL</th><th>Konum</th><th>Sıra</th><th>Durum</th><th>İşlem</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model ?? [])
+                {
+                    <tr>
+                        <td class="fw-semibold">@(item.ParentMenuItemId.HasValue ? "— " : "")@item.Title</td>
+                        <td class="text-muted small">@item.Url</td>
+                        <td><span class="badge bg-secondary">@item.Location</span></td>
+                        <td>@item.DisplayOrder</td>
+                        <td><span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">@(item.IsActive ? "Aktif" : "Pasif")</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editItem(@item.Id)"><i class="fa fa-pen"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(@item.Id)"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-action="Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header"><h5 class="modal-title">Yeni Menü Öğesi</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-12"><label class="form-label fw-semibold">Başlık *</label><input name="Title" class="form-control" required /></div>
+                    <div class="col-12"><label class="form-label fw-semibold">URL</label><input name="Url" class="form-control" placeholder="#portfolio veya /blog" /></div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">İkon Sınıfı</label><input name="IconClass" class="form-control" placeholder="fa fa-home" /></div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Konum</label>
+                        <select name="Location" class="form-select">
+                            <option value="0">Header</option>
+                            <option value="1">Footer</option>
+                            <option value="2">Sidebar</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Üst Öğe</label>
+                        <select name="ParentMenuItemId" class="form-select">
+                            <option value="">-- Ana Öğe --</option>
+                            @foreach (var item in Model ?? [])
+                            {
+                                <option value="@item.Id">@item.Title</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Hedef</label>
+                        <select name="Target" class="form-select">
+                            <option value="">_self</option>
+                            <option value="_blank">_blank</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6"><label class="form-label fw-semibold">Sıra</label><input name="DisplayOrder" type="number" class="form-control" value="0" /></div>
+                    <div class="col-md-6 d-flex align-items-end"><div class="form-check form-switch"><input name="IsActive" type="checkbox" class="form-check-input" value="true" checked /><label class="form-check-label">Aktif</label></div></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary">Kaydet</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const items = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model ?? []));
+function editItem(id) {
+    alert('Düzenleme için: /Admin/Menu/Edit/' + id);
+}
+function deleteItem(id) {
+    Swal.fire({ title: 'Menü öğesini silmek istediğinize emin misiniz?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Evet, Sil', cancelButtonText: 'İptal', confirmButtonColor: '#dc3545' }).then(r => {
+        if (!r.isConfirmed) return;
+        fetch(`/Admin/Menu/Delete/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]').value } }).then(() => location.reload());
+    });
+}
+</script>
+}

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>PortfolioApp.DTO</RootNamespace>
+    <AssemblyName>PortfolioApp.DTO</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PortfolioApp.Entity\PortfolioApp.Entity.csproj" />
+    <ProjectReference Include="..\PortfolioApp.Core\PortfolioApp.Core.csproj" />
+  </ItemGroup>
+
+</Project>

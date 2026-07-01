@@ -1,0 +1,77 @@
+@model PortfolioApp.DTO.ViewModels.Public.HomeViewModel
+<section id="hero" class="hero">
+    <div class="container position-relative">
+        <div class="row align-items-center min-vh-100 py-5">
+            <div class="col-lg-6 order-2 order-lg-1">
+                <div class="fade-up">
+                    @if (!string.IsNullOrEmpty(Model?.Hero?.Subtitle))
+                    {
+                        <p class="section-subtitle mb-3">@Model.Hero.Subtitle</p>
+                    }
+                    <h1 class="hero-title mb-3">
+                        @(Model?.SiteSettings?.SiteName ?? Model?.Hero?.Title ?? "Portfolio")
+                        @if (!string.IsNullOrEmpty(Model?.Hero?.Title))
+                        {
+                            <br /><span>@Model.Hero.Title</span>
+                        }
+                    </h1>
+                    @if (!string.IsNullOrEmpty(Model?.Hero?.Description))
+                    {
+                        <p class="hero-subtitle mb-4">@Model.Hero.Description</p>
+                    }
+                    <div class="d-flex flex-wrap gap-3 mt-4">
+                        <a href="#portfolio" class="btn-primary-modern text-decoration-none">
+                            <i class="fa fa-folder-open"></i> @Localizer["ViewProjects"]
+                        </a>
+                        <a href="#contact" class="btn-outline-modern text-decoration-none">
+                            <i class="fa fa-paper-plane"></i> @SharedLocalizer["CtaGetInTouch"]
+                        </a>
+                        @if (!string.IsNullOrEmpty(Model?.Hero?.CtaButtonUrl))
+                        {
+                            <a href="@Model.Hero.CtaButtonUrl" class="btn-outline-modern text-decoration-none">
+                                <i class="fa fa-download"></i> @(Model.Hero.CtaButtonText ?? SharedLocalizer["CtaDownloadCv"].Value)
+                            </a>
+                        }
+                        @if (!string.IsNullOrEmpty(Model?.About?.CvFileUrl))
+                        {
+                            <a href="@Model.About.CvFileUrl" download class="btn-outline-modern text-decoration-none">
+                                <i class="fa fa-download"></i> @SharedLocalizer["CtaDownloadCv"]
+                            </a>
+                        }
+                    </div>
+
+                    @if (Model?.SocialMediaLinks?.Count > 0)
+                    {
+                        <div class="d-flex gap-3 mt-4">
+                            @foreach (var social in Model.SocialMediaLinks)
+                            {
+                                <a href="@social.Url" target="_blank" rel="noopener"
+                                   style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(212,168,83,.1);color:var(--primary);transition:all .2s;text-decoration:none"
+                                   onmouseover="this.style.background='var(--primary)';this.style.color='#fff'"
+                                   onmouseout="this.style.background='rgba(212,168,83,.1)';this.style.color='var(--primary)'">
+                                    <i class="@social.IconClass fa-lg"></i>
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-6 order-1 order-lg-2 text-center mb-5 mb-lg-0">
+                <div class="fade-up" style="transition-delay:.2s">
+                    @if (!string.IsNullOrEmpty(Model?.Hero?.ProfileImageUrl))
+                    {
+                        <img src="@Model.Hero.ProfileImageUrl" alt="@(Model.SiteSettings?.SiteName ?? "Profile")"
+                             class="hero-image img-fluid" />
+                    }
+                    else
+                    {
+                        <div class="hero-image d-inline-flex align-items-center justify-content-center bg-light"
+                             style="font-size:6rem;color:var(--primary)">
+                            <i class="fa fa-user"></i>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,80 @@
+@model IList<PortfolioApp.DTO.DTOs.Site.FooterContentDto>
+@{
+    ViewData["Title"] = "Footer";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-shoe-prints me-2 text-primary"></i>Footer İçerikleri</h5>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="fa fa-plus me-1"></i>Yeni Ekle
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0" id="dataTable">
+            <thead class="table-light">
+                <tr><th>Başlık</th><th>Tür</th><th>Konum</th><th>Durum</th><th>İşlem</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model ?? [])
+                {
+                    <tr>
+                        <td class="fw-semibold">@item.SectionTitle</td>
+                        <td><span class="badge bg-info text-dark">@item.SectionType</span></td>
+                        <td>Kolon @item.ColumnPosition</td>
+                        <td><span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">@(item.IsActive ? "Aktif" : "Pasif")</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editItem(@item.Id)"><i class="fa fa-pen"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(@item.Id)"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" asp-action="Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header"><h5 class="modal-title">Yeni Footer İçeriği</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-8"><label class="form-label fw-semibold">Başlık *</label><input name="SectionTitle" class="form-control" required /></div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Tür</label>
+                        <select name="SectionType" class="form-select">
+                            <option value="0">Metin</option>
+                            <option value="1">Linkler</option>
+                            <option value="2">Sosyal Medya</option>
+                            <option value="3">Bülten</option>
+                        </select>
+                    </div>
+                    <div class="col-12"><label class="form-label fw-semibold">İçerik</label><textarea name="Content" class="form-control" rows="4"></textarea></div>
+                    <div class="col-md-4"><label class="form-label fw-semibold">Kolon (1-4)</label><input name="ColumnPosition" type="number" min="1" max="4" class="form-control" value="1" /></div>
+                    <div class="col-md-4"><label class="form-label fw-semibold">Sıra</label><input name="DisplayOrder" type="number" class="form-control" value="0" /></div>
+                    <div class="col-md-4 d-flex align-items-end"><div class="form-check form-switch"><input name="IsActive" type="checkbox" class="form-check-input" value="true" checked /><label class="form-check-label">Aktif</label></div></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary">Kaydet</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const items = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model ?? []));
+function editItem(id) {
+    alert('Düzenleme: /Admin/Footer/Edit/' + id);
+}
+function deleteItem(id) {
+    Swal.fire({ title: 'Silmek istediğinize emin misiniz?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Evet, Sil', cancelButtonText: 'İptal', confirmButtonColor: '#dc3545' }).then(r => {
+        if (!r.isConfirmed) return;
+        fetch(`/Admin/Footer/Delete/${id}`, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]').value } }).then(() => location.reload());
+    });
+}
+</script>
+}
