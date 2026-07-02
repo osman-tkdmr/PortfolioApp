@@ -1,4 +1,5 @@
 using AutoMapper;
+using PortfolioApp.Business.Security;
 using PortfolioApp.Business.Services.Interfaces;
 using PortfolioApp.Core.Results;
 using PortfolioApp.DataAccess.UnitOfWork;
@@ -51,6 +52,7 @@ public class AboutService : IAboutService
         var about = await _uow.GetRepository<About>().GetByIdAsync(dto.Id);
         if (about is null) return Result.Fail("Hakkımda bölümü bulunamadı.");
         _mapper.Map(dto, about);
+        about.Content = RichTextSanitizer.Sanitize(dto.Content);
         _uow.GetRepository<About>().Update(about);
         await _uow.SaveChangesAsync();
         return Result.Ok("Hakkımda bölümü güncellendi.");

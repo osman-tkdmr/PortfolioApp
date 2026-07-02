@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PortfolioApp.Core.Constants;
 using PortfolioApp.Entity.Concrete;
+using PortfolioApp.Web.Infrastructure;
 
 namespace PortfolioApp.Web.Areas.Admin.Controllers;
 
@@ -34,6 +36,7 @@ public class AccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting(RateLimitPolicies.Login)]
     public async Task<IActionResult> Login(string email, string password, bool rememberMe, string? returnUrl = null)
     {
         ViewData["ReturnUrl"] = returnUrl;

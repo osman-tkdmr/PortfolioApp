@@ -6,6 +6,7 @@ namespace PortfolioApp.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Authorize(Roles = AppConstants.Roles.Admin)]
+[AutoValidateAntiforgeryToken]
 public abstract class AdminBaseController : Controller
 {
     protected void Success(string message) => TempData["Success"] = message;

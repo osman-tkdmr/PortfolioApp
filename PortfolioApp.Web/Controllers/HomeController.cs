@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Localization;
 using PortfolioApp.Business.Services.Interfaces;
 using PortfolioApp.DTO.ViewModels.Public;
 using PortfolioApp.Web;
+using PortfolioApp.Web.Infrastructure;
 
 namespace PortfolioApp.Web.Controllers;
 
@@ -102,6 +104,7 @@ public class HomeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting(RateLimitPolicies.Contact)]
     public async Task<IActionResult> Contact(string senderName, string senderEmail, string subject, string message)
     {
         if (string.IsNullOrWhiteSpace(senderName) || string.IsNullOrWhiteSpace(senderEmail) ||

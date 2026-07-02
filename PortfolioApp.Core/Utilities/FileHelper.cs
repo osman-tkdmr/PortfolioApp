@@ -2,7 +2,8 @@ namespace PortfolioApp.Core.Utilities;
 
 public static class FileHelper
 {
-    private static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
+    // .svg intentionally excluded — SVG can carry <script>/event-handler payloads (stored XSS via upload).
+    private static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
     private static readonly string[] AllowedDocumentExtensions = [".pdf", ".doc", ".docx"];
 
     public static string GetUniqueFileName(string fileName)

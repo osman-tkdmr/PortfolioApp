@@ -480,3 +480,9 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Local secrets — never commit real credentials/connection strings.
+# Use `dotnet user-secrets` or environment variables instead.
+appsettings.Development.json
+appsettings.*.Local.json
+appsettings.Local.json

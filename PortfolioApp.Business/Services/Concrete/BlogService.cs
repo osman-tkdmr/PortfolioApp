@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentValidation;
+using PortfolioApp.Business.Security;
 using PortfolioApp.Business.Services.Interfaces;
 using PortfolioApp.Core.Results;
 using PortfolioApp.Core.Utilities;
@@ -83,8 +84,9 @@ public class BlogService : IBlogService
             return Result.Fail(string.Join(", ", validation.Errors.Select(e => e.ErrorMessage)));
 
         var post = _mapper.Map<BlogPost>(dto);
+        post.Content = RichTextSanitizer.Sanitize(dto.Content);
         post.AuthorId = authorId;
-        post.ReadTimeMinutes = PaginationHelper.CalculateReadingTime(dto.Content);
+        post.ReadTimeMinutes = PaginationHelper.CalculateReadingTime(post.Content);
 
         if (dto.IsPublished)
             post.PublishedAt = DateTime.UtcNow;
@@ -113,7 +115,8 @@ public class BlogService : IBlogService
             return Result.Fail("Blog yazısı bulunamadı.");
 
         _mapper.Map(dto, post);
-        post.ReadTimeMinutes = PaginationHelper.CalculateReadingTime(dto.Content);
+        post.Content = RichTextSanitizer.Sanitize(dto.Content);
+        post.ReadTimeMinutes = PaginationHelper.CalculateReadingTime(post.Content);
 
         _uow.GetRepository<BlogPost>().Update(post);
 

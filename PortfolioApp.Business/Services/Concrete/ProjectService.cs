@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentValidation;
+using PortfolioApp.Business.Security;
 using PortfolioApp.Business.Services.Interfaces;
 using PortfolioApp.Core.Results;
 using PortfolioApp.Core.Utilities;
@@ -70,6 +71,7 @@ public class ProjectService : IProjectService
             return Result.Fail(string.Join(", ", validation.Errors.Select(e => e.ErrorMessage)));
 
         var project = _mapper.Map<Project>(dto);
+        project.Description = RichTextSanitizer.Sanitize(dto.Description);
         await _uow.GetRepository<Project>().AddAsync(project);
         await _uow.SaveChangesAsync();
 
@@ -89,6 +91,7 @@ public class ProjectService : IProjectService
         if (project is null) return Result.Fail("Proje bulunamadı.");
 
         _mapper.Map(dto, project);
+        project.Description = RichTextSanitizer.Sanitize(dto.Description);
         _uow.GetRepository<Project>().Update(project);
 
         // Update technologies

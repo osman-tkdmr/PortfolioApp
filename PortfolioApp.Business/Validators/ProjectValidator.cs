@@ -15,13 +15,19 @@ public class ProjectCreateValidator : AbstractValidator<ProjectCreateDto>
             .GreaterThan(0).WithMessage("Kategori seçimi zorunludur.");
 
         RuleFor(x => x.DemoUrl)
-            .Must(url => Uri.TryCreate(url, UriKind.Absolute, out _))
+            .Must(IsHttpUrl)
             .WithMessage("Geçerli bir URL giriniz.")
             .When(x => !string.IsNullOrEmpty(x.DemoUrl));
 
         RuleFor(x => x.SourceUrl)
-            .Must(url => Uri.TryCreate(url, UriKind.Absolute, out _))
+            .Must(IsHttpUrl)
             .WithMessage("Geçerli bir URL giriniz.")
             .When(x => !string.IsNullOrEmpty(x.SourceUrl));
     }
+
+    // Restrict to http(s) so a value like "javascript:..." can't be stored and later
+    // rendered straight into an href attribute on the public project detail page.
+    private static bool IsHttpUrl(string? url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+        (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 }

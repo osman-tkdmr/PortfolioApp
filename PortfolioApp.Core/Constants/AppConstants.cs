@@ -34,7 +34,7 @@ public static class AppConstants
         public const string AvatarsPath = "uploads/avatars";
         public const string CvPath = "uploads/cv";
         public const string ThemesPath = "uploads/themes";
-        public const int MaxImageSizeBytes = 10 * 1024 * 1024;
+        public const int MaxImageSizeBytes = 5 * 1024 * 1024;
     }
 
     public static class Pagination
@@ -48,7 +48,6 @@ public static class AppConstants
     public static class SeedData
     {
         public const string AdminEmail = "admin@portfolio.com";
-        public const string AdminPassword = "Admin@123456!";
         public const string AdminFirstName = "Admin";
         public const string AdminLastName = "User";
     }

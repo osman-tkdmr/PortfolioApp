@@ -54,6 +54,8 @@ public class FileUploadService : IFileUploadService
         ValidateFile(file, _allowedDocExts);
 
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        await ValidateDocumentSignatureAsync(file, ext);
+
         var fileName = $"{Guid.NewGuid():N}{ext}";
         var uploadDir = Path.Combine(_env.WebRootPath, "uploads", folder);
         Directory.CreateDirectory(uploadDir);
@@ -69,9 +71,13 @@ public class FileUploadService : IFileUploadService
     {
         if (string.IsNullOrWhiteSpace(relativePath)) return;
 
-        // Prevent path traversal
-        var normalized = relativePath.Replace('/', Path.DirectorySeparatorChar).TrimStart(Path.DirectorySeparatorChar);
-        var fullPath = Path.Combine(_env.WebRootPath, normalized);
+        var uploadsRoot = Path.GetFullPath(Path.Combine(_env.WebRootPath, "uploads") + Path.DirectorySeparatorChar);
+        var normalized = relativePath.TrimStart('/', '\\').Replace('/', Path.DirectorySeparatorChar);
+        var fullPath = Path.GetFullPath(Path.Combine(_env.WebRootPath, normalized));
+
+        // Reject anything that escapes the uploads directory (e.g. via "..") before touching the filesystem
+        if (!fullPath.StartsWith(uploadsRoot, StringComparison.Ordinal))
+            throw new InvalidOperationException("Geçersiz dosya yolu.");
 
         if (File.Exists(fullPath))
             File.Delete(fullPath);
@@ -85,5 +91,29 @@ public class FileUploadService : IFileUploadService
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!allowedExts.Contains(ext))
             throw new InvalidOperationException($"İzin verilmeyen dosya türü: {ext}");
+    }
+
+    // Extension whitelist alone trusts the client-supplied filename; check the actual
+    // file signature so a renamed arbitrary payload can't pass as a .pdf/.doc/.docx.
+    private static async Task ValidateDocumentSignatureAsync(IFormFile file, string ext)
+    {
+        var header = new byte[8];
+        await using (var stream = file.OpenReadStream())
+        {
+            var read = await stream.ReadAsync(header.AsMemory(0, header.Length));
+            if (read < header.Length)
+                Array.Clear(header, read, header.Length - read);
+        }
+
+        var isValid = ext switch
+        {
+            ".pdf" => header.AsSpan(0, 5).SequenceEqual("%PDF-"u8),
+            ".doc" => header.AsSpan(0, 8).SequenceEqual(new byte[] { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 }),
+            ".docx" => header.AsSpan(0, 4).SequenceEqual(new byte[] { 0x50, 0x4B, 0x03, 0x04 }),
+            _ => false
+        };
+
+        if (!isValid)
+            throw new InvalidOperationException("Dosya içeriği beklenen türle eşleşmiyor.");
     }
 }

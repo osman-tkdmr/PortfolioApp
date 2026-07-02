@@ -1,6 +1,9 @@
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PortfolioApp.Core.Constants;
 using PortfolioApp.DataAccess.Context;
 using PortfolioApp.Entity.Concrete;
@@ -14,11 +17,13 @@ public static class DataSeeder
         var context = serviceProvider.GetRequiredService<PortfolioDbContext>();
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+        var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(DataSeeder));
 
         await context.Database.MigrateAsync();
 
         await SeedRolesAsync(roleManager);
-        await SeedAdminUserAsync(userManager);
+        await SeedAdminUserAsync(userManager, configuration, logger);
         await SeedThemesAsync(context);
         await SeedSiteSettingsAsync(context);
         await SeedSeoSettingsAsync(context);
@@ -36,25 +41,75 @@ public static class DataSeeder
         }
     }
 
-    private static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager)
+    private static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager, IConfiguration configuration, ILogger logger)
     {
-        if (await userManager.FindByEmailAsync(AppConstants.SeedData.AdminEmail) is not null)
+        var adminEmail = configuration["AdminSettings:Email"];
+        if (string.IsNullOrWhiteSpace(adminEmail))
+            adminEmail = AppConstants.SeedData.AdminEmail;
+
+        if (await userManager.FindByEmailAsync(adminEmail) is not null)
             return;
+
+        var firstName = configuration["AdminSettings:FirstName"];
+        var lastName = configuration["AdminSettings:LastName"];
 
         var admin = new ApplicationUser
         {
-            UserName = AppConstants.SeedData.AdminEmail,
-            Email = AppConstants.SeedData.AdminEmail,
-            FirstName = AppConstants.SeedData.AdminFirstName,
-            LastName = AppConstants.SeedData.AdminLastName,
+            UserName = adminEmail,
+            Email = adminEmail,
+            FirstName = string.IsNullOrWhiteSpace(firstName) ? AppConstants.SeedData.AdminFirstName : firstName,
+            LastName = string.IsNullOrWhiteSpace(lastName) ? AppConstants.SeedData.AdminLastName : lastName,
             Title = "Full-Stack Developer",
             EmailConfirmed = true,
             IsActive = true
         };
 
-        var result = await userManager.CreateAsync(admin, AppConstants.SeedData.AdminPassword);
+        var configuredPassword = configuration["AdminSettings:Password"];
+        var isGeneratedPassword = string.IsNullOrWhiteSpace(configuredPassword);
+        var adminPassword = isGeneratedPassword ? GenerateRandomPassword() : configuredPassword!;
+
+        var result = await userManager.CreateAsync(admin, adminPassword);
         if (result.Succeeded)
+        {
             await userManager.AddToRoleAsync(admin, AppConstants.Roles.Admin);
+
+            if (isGeneratedPassword)
+            {
+                logger.LogWarning(
+                    "AdminSettings:Password yapılandırılmamış olduğu için '{Email}' hesabı için rastgele bir şifre üretildi: {Password} — lütfen ilk girişten sonra bu şifreyi değiştirin ve appsettings/user-secrets üzerinden kalıcı bir şifre tanımlayın.",
+                    adminEmail, adminPassword);
+            }
+        }
+        else
+        {
+            logger.LogError("Admin kullanıcısı oluşturulamadı: {Errors}", string.Join("; ", result.Errors.Select(e => e.Description)));
+        }
+    }
+
+    private static string GenerateRandomPassword()
+    {
+        const string upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+        const string lower = "abcdefghijkmnopqrstuvwxyz";
+        const string digits = "23456789";
+        const string special = "!@#$%^&*";
+        const string all = upper + lower + digits + special;
+
+        Span<char> chars = stackalloc char[16];
+        chars[0] = upper[RandomNumberGenerator.GetInt32(upper.Length)];
+        chars[1] = lower[RandomNumberGenerator.GetInt32(lower.Length)];
+        chars[2] = digits[RandomNumberGenerator.GetInt32(digits.Length)];
+        chars[3] = special[RandomNumberGenerator.GetInt32(special.Length)];
+        for (var i = 4; i < chars.Length; i++)
+            chars[i] = all[RandomNumberGenerator.GetInt32(all.Length)];
+
+        // Shuffle so the guaranteed-category characters aren't always in the same position
+        for (var i = chars.Length - 1; i > 0; i--)
+        {
+            var j = RandomNumberGenerator.GetInt32(i + 1);
+            (chars[i], chars[j]) = (chars[j], chars[i]);
+        }
+
+        return new string(chars);
     }
 
     private static async Task SeedThemesAsync(PortfolioDbContext context)

@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using PortfolioApp.Business.Services.Interfaces;
 
@@ -28,7 +29,7 @@ public class VisitorTrackingMiddleware
         {
             var userAgent = context.Request.Headers.UserAgent.ToString();
             var isBot = IsKnownBot(userAgent);
-            var ipAddress = context.Connection.RemoteIpAddress?.ToString();
+            var ipAddress = AnonymizeIp(context.Connection.RemoteIpAddress);
             var referrer = context.Request.Headers.Referer.ToString();
             var sessionId = context.Session.Id;
 
@@ -46,6 +47,26 @@ public class VisitorTrackingMiddleware
         }
 
         await _next(context);
+    }
+
+    // Analytics only need approximate origin, not a stored PII-grade identifier: mask the
+    // last IPv4 octet / last 80 bits of IPv6 before anything reaches the database.
+    private static string? AnonymizeIp(IPAddress? address)
+    {
+        if (address is null) return null;
+
+        var bytes = address.GetAddressBytes();
+        if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+        {
+            bytes[3] = 0;
+        }
+        else
+        {
+            for (var i = 6; i < bytes.Length; i++)
+                bytes[i] = 0;
+        }
+
+        return new IPAddress(bytes).ToString();
     }
 
     private static bool IsKnownBot(string userAgent)
