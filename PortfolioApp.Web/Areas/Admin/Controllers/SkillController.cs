@@ -15,7 +15,7 @@ public class SkillController : AdminBaseController
 
     public async Task<IActionResult> Index()
     {
-        var result = await _skillService.GetCategoriesWithSkillsAsync();
+        var result = await _skillService.GetCategoriesWithSkillsAsync(CurrentUserId);
         return View(result.Data);
     }
 

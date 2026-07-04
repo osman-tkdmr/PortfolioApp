@@ -21,9 +21,9 @@ public class ContactService : IContactService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<ContactInfoDto?>> GetContactInfoAsync()
+    public async Task<IDataResult<ContactInfoDto?>> GetContactInfoAsync(string ownerId)
     {
-        var info = await _uow.GetRepository<ContactInfo>().FirstOrDefaultAsync(c => c.IsActive);
+        var info = await _uow.GetRepository<ContactInfo>().FirstOrDefaultAsync(c => c.UserId == ownerId && c.IsActive);
         return DataResult<ContactInfoDto?>.Ok(_mapper.Map<ContactInfoDto?>(info));
     }
 
@@ -53,9 +53,10 @@ public class ContactService : IContactService
             : DataResult<ContactMessageDto>.Ok(_mapper.Map<ContactMessageDto>(msg));
     }
 
-    public async Task<IResult> SendMessageAsync(ContactMessageCreateDto dto)
+    public async Task<IResult> SendMessageAsync(string ownerId, ContactMessageCreateDto dto)
     {
         var message = _mapper.Map<ContactMessage>(dto);
+        message.UserId = ownerId;
         await _uow.GetRepository<ContactMessage>().AddAsync(message);
         await _uow.SaveChangesAsync();
         return Result.Ok("Mesajınız gönderildi. En kısa sürede dönüş yapacağım.");

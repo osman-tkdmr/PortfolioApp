@@ -24,9 +24,9 @@ public class HeroService : IHeroService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<HeroSectionDto?>> GetActiveAsync()
+    public async Task<IDataResult<HeroSectionDto?>> GetActiveAsync(string ownerId)
     {
-        var hero = await _uow.GetRepository<HeroSection>().FirstOrDefaultAsync(h => h.IsActive);
+        var hero = await _uow.GetRepository<HeroSection>().FirstOrDefaultAsync(h => h.UserId == ownerId && h.IsActive);
         return DataResult<HeroSectionDto?>.Ok(_mapper.Map<HeroSectionDto?>(hero));
     }
 
@@ -54,9 +54,9 @@ public class AboutService : IAboutService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<AboutDto?>> GetActiveAsync()
+    public async Task<IDataResult<AboutDto?>> GetActiveAsync(string ownerId)
     {
-        var about = await _uow.GetRepository<About>().FirstOrDefaultAsync(a => a.IsActive);
+        var about = await _uow.GetRepository<About>().FirstOrDefaultAsync(a => a.UserId == ownerId && a.IsActive);
         return DataResult<AboutDto?>.Ok(_mapper.Map<AboutDto?>(about));
     }
 
@@ -85,9 +85,9 @@ public class ExperienceService : IExperienceService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<IList<ExperienceDto>>> GetAllActiveAsync()
+    public async Task<IDataResult<IList<ExperienceDto>>> GetAllActiveAsync(string ownerId)
     {
-        var items = await _uow.GetRepository<Experience>().FindAsync(e => e.IsActive);
+        var items = await _uow.GetRepository<Experience>().FindAsync(e => e.UserId == ownerId && e.IsActive);
         return DataResult<IList<ExperienceDto>>.Ok(_mapper.Map<IList<ExperienceDto>>(items.OrderBy(e => e.DisplayOrder).ToList()));
     }
 
@@ -139,9 +139,9 @@ public class EducationService : IEducationService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<IList<EducationDto>>> GetAllActiveAsync()
+    public async Task<IDataResult<IList<EducationDto>>> GetAllActiveAsync(string ownerId)
     {
-        var items = await _uow.GetRepository<Education>().FindAsync(e => e.IsActive);
+        var items = await _uow.GetRepository<Education>().FindAsync(e => e.UserId == ownerId && e.IsActive);
         return DataResult<IList<EducationDto>>.Ok(_mapper.Map<IList<EducationDto>>(items.OrderBy(e => e.DisplayOrder).ToList()));
     }
 
@@ -193,9 +193,9 @@ public class CertificateService : ICertificateService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<IList<CertificateDto>>> GetAllActiveAsync()
+    public async Task<IDataResult<IList<CertificateDto>>> GetAllActiveAsync(string ownerId)
     {
-        var items = await _uow.GetRepository<Certificate>().FindAsync(c => c.IsActive);
+        var items = await _uow.GetRepository<Certificate>().FindAsync(c => c.UserId == ownerId && c.IsActive);
         return DataResult<IList<CertificateDto>>.Ok(_mapper.Map<IList<CertificateDto>>(items.OrderBy(c => c.DisplayOrder).ToList()));
     }
 
@@ -247,11 +247,11 @@ public class SkillService : ISkillService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<IList<SkillCategoryDto>>> GetCategoriesWithSkillsAsync()
+    public async Task<IDataResult<IList<SkillCategoryDto>>> GetCategoriesWithSkillsAsync(string ownerId)
     {
         var categories = await _uow.GetRepository<SkillCategory>()
             .GetQueryable()
-            .Where(c => c.IsActive && !c.IsDeleted)
+            .Where(c => c.UserId == ownerId && c.IsActive && !c.IsDeleted)
             .Include(c => c.Skills.Where(s => s.IsActive && !s.IsDeleted))
             .OrderBy(c => c.DisplayOrder)
             .ToListAsync();
@@ -346,9 +346,9 @@ public class LanguageService : ILanguageService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<IList<LanguageDto>>> GetAllActiveAsync()
+    public async Task<IDataResult<IList<LanguageDto>>> GetAllActiveAsync(string ownerId)
     {
-        var items = await _uow.GetRepository<Language>().FindAsync(l => l.IsActive);
+        var items = await _uow.GetRepository<Language>().FindAsync(l => l.UserId == ownerId && l.IsActive);
         return DataResult<IList<LanguageDto>>.Ok(_mapper.Map<IList<LanguageDto>>(items.OrderBy(l => l.DisplayOrder).ToList()));
     }
 
@@ -400,9 +400,9 @@ public class AchievementService : IAchievementService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<IList<AchievementDto>>> GetAllActiveAsync()
+    public async Task<IDataResult<IList<AchievementDto>>> GetAllActiveAsync(string ownerId)
     {
-        var items = await _uow.GetRepository<Achievement>().FindAsync(a => a.IsActive);
+        var items = await _uow.GetRepository<Achievement>().FindAsync(a => a.UserId == ownerId && a.IsActive);
         return DataResult<IList<AchievementDto>>.Ok(_mapper.Map<IList<AchievementDto>>(items.OrderBy(a => a.DisplayOrder).ToList()));
     }
 
@@ -454,15 +454,16 @@ public class TestimonialService : ITestimonialService
         _currentUser = currentUser;
     }
 
+    // Admin-only: moderation list, includes not-yet-approved testimonials for the current tenant
     public async Task<IDataResult<IList<TestimonialDto>>> GetAllActiveAsync()
     {
-        var items = await _uow.GetRepository<Testimonial>().FindAsync(t => t.IsActive);
+        var items = await _uow.GetRepository<Testimonial>().FindAsync(t => t.UserId == _currentUser.UserId && t.IsActive);
         return DataResult<IList<TestimonialDto>>.Ok(_mapper.Map<IList<TestimonialDto>>(items));
     }
 
-    public async Task<IDataResult<IList<TestimonialDto>>> GetApprovedAsync()
+    public async Task<IDataResult<IList<TestimonialDto>>> GetApprovedAsync(string ownerId)
     {
-        var items = await _uow.GetRepository<Testimonial>().FindAsync(t => t.IsActive && t.IsApproved);
+        var items = await _uow.GetRepository<Testimonial>().FindAsync(t => t.UserId == ownerId && t.IsActive && t.IsApproved);
         return DataResult<IList<TestimonialDto>>.Ok(_mapper.Map<IList<TestimonialDto>>(items.OrderBy(t => t.DisplayOrder).ToList()));
     }
 
@@ -514,9 +515,9 @@ public class SocialMediaService : ISocialMediaService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<IList<SocialMediaDto>>> GetAllActiveAsync()
+    public async Task<IDataResult<IList<SocialMediaDto>>> GetAllActiveAsync(string ownerId)
     {
-        var items = await _uow.GetRepository<SocialMedia>().FindAsync(s => s.IsActive);
+        var items = await _uow.GetRepository<SocialMedia>().FindAsync(s => s.UserId == ownerId && s.IsActive);
         return DataResult<IList<SocialMediaDto>>.Ok(_mapper.Map<IList<SocialMediaDto>>(items.OrderBy(s => s.DisplayOrder).ToList()));
     }
 
@@ -568,11 +569,12 @@ public class MenuService : IMenuService
         _currentUser = currentUser;
     }
 
+    // Not wired into any public view yet — scoped to the current admin's own menu for now.
     public async Task<IDataResult<IList<MenuItemDto>>> GetHeaderMenuAsync()
     {
         var items = await _uow.GetRepository<MenuItem>()
             .GetQueryable()
-            .Where(m => m.IsActive && !m.IsDeleted && m.Location == Core.Enums.MenuLocation.Header && m.ParentMenuItemId == null)
+            .Where(m => m.UserId == _currentUser.UserId && m.IsActive && !m.IsDeleted && m.Location == Core.Enums.MenuLocation.Header && m.ParentMenuItemId == null)
             .Include(m => m.Children.Where(c => c.IsActive && !c.IsDeleted))
             .OrderBy(m => m.DisplayOrder)
             .ToListAsync();
@@ -633,9 +635,10 @@ public class FooterService : IFooterService
         _currentUser = currentUser;
     }
 
+    // Not wired into any public view yet — scoped to the current admin's own footer content for now.
     public async Task<IDataResult<IList<FooterContentDto>>> GetAllActiveAsync()
     {
-        var items = await _uow.GetRepository<FooterContent>().FindAsync(f => f.IsActive);
+        var items = await _uow.GetRepository<FooterContent>().FindAsync(f => f.UserId == _currentUser.UserId && f.IsActive);
         return DataResult<IList<FooterContentDto>>.Ok(_mapper.Map<IList<FooterContentDto>>(items.OrderBy(f => f.DisplayOrder).ToList()));
     }
 
@@ -687,9 +690,9 @@ public class SeoService : ISeoService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<SeoSettingsDto?>> GetByPageSlugAsync(string slug)
+    public async Task<IDataResult<SeoSettingsDto?>> GetByPageSlugAsync(string ownerId, string slug)
     {
-        var seo = await _uow.GetRepository<SeoSettings>().FirstOrDefaultAsync(s => s.PageSlug == slug);
+        var seo = await _uow.GetRepository<SeoSettings>().FirstOrDefaultAsync(s => s.UserId == ownerId && s.PageSlug == slug);
         return DataResult<SeoSettingsDto?>.Ok(_mapper.Map<SeoSettingsDto?>(seo));
     }
 

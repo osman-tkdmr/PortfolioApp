@@ -15,7 +15,7 @@ public class LanguageController : AdminBaseController
 
     public async Task<IActionResult> Index()
     {
-        var result = await _languageService.GetAllActiveAsync();
+        var result = await _languageService.GetAllActiveAsync(CurrentUserId);
         return View(result.Data);
     }
 

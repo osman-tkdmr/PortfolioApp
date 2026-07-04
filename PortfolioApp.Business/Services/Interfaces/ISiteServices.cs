@@ -20,19 +20,20 @@ public interface IThemeService
 
 public interface IHeroService
 {
-    Task<IDataResult<HeroSectionDto?>> GetActiveAsync();
+    /// <summary>ownerId: the tenant whose Hero section to load — admin's own Id when called from the Admin area, the route-resolved public profile owner otherwise.</summary>
+    Task<IDataResult<HeroSectionDto?>> GetActiveAsync(string ownerId);
     Task<IResult> UpdateAsync(HeroSectionUpdateDto dto);
 }
 
 public interface IAboutService
 {
-    Task<IDataResult<AboutDto?>> GetActiveAsync();
+    Task<IDataResult<AboutDto?>> GetActiveAsync(string ownerId);
     Task<IResult> UpdateAsync(AboutUpdateDto dto);
 }
 
 public interface IExperienceService
 {
-    Task<IDataResult<IList<ExperienceDto>>> GetAllActiveAsync();
+    Task<IDataResult<IList<ExperienceDto>>> GetAllActiveAsync(string ownerId);
     Task<IDataResult<ExperienceDto>> GetByIdAsync(int id);
     Task<IResult> CreateAsync(ExperienceCreateDto dto);
     Task<IResult> UpdateAsync(int id, ExperienceUpdateDto dto);
@@ -41,7 +42,7 @@ public interface IExperienceService
 
 public interface IEducationService
 {
-    Task<IDataResult<IList<EducationDto>>> GetAllActiveAsync();
+    Task<IDataResult<IList<EducationDto>>> GetAllActiveAsync(string ownerId);
     Task<IDataResult<EducationDto>> GetByIdAsync(int id);
     Task<IResult> CreateAsync(EducationCreateDto dto);
     Task<IResult> UpdateAsync(int id, EducationUpdateDto dto);
@@ -50,7 +51,7 @@ public interface IEducationService
 
 public interface ICertificateService
 {
-    Task<IDataResult<IList<CertificateDto>>> GetAllActiveAsync();
+    Task<IDataResult<IList<CertificateDto>>> GetAllActiveAsync(string ownerId);
     Task<IDataResult<CertificateDto>> GetByIdAsync(int id);
     Task<IResult> CreateAsync(CertificateCreateDto dto);
     Task<IResult> UpdateAsync(int id, CertificateUpdateDto dto);
@@ -59,7 +60,7 @@ public interface ICertificateService
 
 public interface ISkillService
 {
-    Task<IDataResult<IList<SkillCategoryDto>>> GetCategoriesWithSkillsAsync();
+    Task<IDataResult<IList<SkillCategoryDto>>> GetCategoriesWithSkillsAsync(string ownerId);
     Task<IDataResult<IList<SkillDto>>> GetAllSkillsAsync();
     Task<IDataResult<SkillDto>> GetSkillByIdAsync(int id);
     Task<IResult> CreateSkillAsync(SkillCreateDto dto);
@@ -73,7 +74,7 @@ public interface ISkillService
 
 public interface ILanguageService
 {
-    Task<IDataResult<IList<LanguageDto>>> GetAllActiveAsync();
+    Task<IDataResult<IList<LanguageDto>>> GetAllActiveAsync(string ownerId);
     Task<IDataResult<LanguageDto>> GetByIdAsync(int id);
     Task<IResult> CreateAsync(LanguageCreateDto dto);
     Task<IResult> UpdateAsync(int id, LanguageUpdateDto dto);
@@ -82,7 +83,7 @@ public interface ILanguageService
 
 public interface IAchievementService
 {
-    Task<IDataResult<IList<AchievementDto>>> GetAllActiveAsync();
+    Task<IDataResult<IList<AchievementDto>>> GetAllActiveAsync(string ownerId);
     Task<IDataResult<AchievementDto>> GetByIdAsync(int id);
     Task<IResult> CreateAsync(AchievementCreateDto dto);
     Task<IResult> UpdateAsync(int id, AchievementUpdateDto dto);
@@ -92,7 +93,7 @@ public interface IAchievementService
 public interface ITestimonialService
 {
     Task<IDataResult<IList<TestimonialDto>>> GetAllActiveAsync();
-    Task<IDataResult<IList<TestimonialDto>>> GetApprovedAsync();
+    Task<IDataResult<IList<TestimonialDto>>> GetApprovedAsync(string ownerId);
     Task<IDataResult<TestimonialDto>> GetByIdAsync(int id);
     Task<IResult> CreateAsync(TestimonialCreateDto dto);
     Task<IResult> UpdateAsync(int id, TestimonialUpdateDto dto);
@@ -101,11 +102,11 @@ public interface ITestimonialService
 
 public interface IContactService
 {
-    Task<IDataResult<ContactInfoDto?>> GetContactInfoAsync();
+    Task<IDataResult<ContactInfoDto?>> GetContactInfoAsync(string ownerId);
     Task<IResult> UpdateContactInfoAsync(ContactInfoUpdateDto dto);
     Task<IDataResult<IList<ContactMessageDto>>> GetMessagesAsync();
     Task<IDataResult<ContactMessageDto>> GetMessageByIdAsync(int id);
-    Task<IResult> SendMessageAsync(ContactMessageCreateDto dto);
+    Task<IResult> SendMessageAsync(string ownerId, ContactMessageCreateDto dto);
     Task<IResult> MarkAsReadAsync(int id);
     Task<IResult> ReplyAsync(int id, string replyText);
     Task<IResult> DeleteMessageAsync(int id);
@@ -114,7 +115,7 @@ public interface IContactService
 
 public interface ISocialMediaService
 {
-    Task<IDataResult<IList<SocialMediaDto>>> GetAllActiveAsync();
+    Task<IDataResult<IList<SocialMediaDto>>> GetAllActiveAsync(string ownerId);
     Task<IDataResult<SocialMediaDto>> GetByIdAsync(int id);
     Task<IResult> CreateAsync(SocialMediaCreateDto dto);
     Task<IResult> UpdateAsync(int id, SocialMediaUpdateDto dto);
@@ -142,7 +143,7 @@ public interface IFooterService
 
 public interface ISeoService
 {
-    Task<IDataResult<SeoSettingsDto?>> GetByPageSlugAsync(string slug);
+    Task<IDataResult<SeoSettingsDto?>> GetByPageSlugAsync(string ownerId, string slug);
     Task<IDataResult<IList<SeoSettingsDto>>> GetAllAsync();
     Task<IResult> UpdateAsync(SeoSettingsUpdateDto dto);
 }

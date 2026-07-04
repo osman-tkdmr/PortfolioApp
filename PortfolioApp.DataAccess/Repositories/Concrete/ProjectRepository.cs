@@ -8,26 +8,26 @@ public class ProjectRepository : GenericRepository<Project>
 {
     public ProjectRepository(PortfolioDbContext context) : base(context) { }
 
-    public async Task<Project?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
+    public async Task<Project?> GetBySlugAsync(string ownerId, string slug, CancellationToken cancellationToken = default) =>
         await _dbSet.AsNoTracking()
             .Include(p => p.ProjectCategory)
             .Include(p => p.Images.Where(i => !i.IsDeleted).OrderBy(i => i.DisplayOrder))
             .Include(p => p.ProjectTechnologies).ThenInclude(pt => pt.Technology)
-            .FirstOrDefaultAsync(p => p.Slug == slug, cancellationToken);
+            .FirstOrDefaultAsync(p => p.UserId == ownerId && p.Slug == slug, cancellationToken);
 
-    public async Task<IList<Project>> GetFeaturedAsync(int count, CancellationToken cancellationToken = default) =>
+    public async Task<IList<Project>> GetFeaturedAsync(string ownerId, int count, CancellationToken cancellationToken = default) =>
         await _dbSet.AsNoTracking()
-            .Where(p => p.IsFeatured && p.IsActive)
+            .Where(p => p.UserId == ownerId && p.IsFeatured && p.IsActive)
             .Include(p => p.ProjectCategory)
             .Include(p => p.ProjectTechnologies).ThenInclude(pt => pt.Technology)
             .OrderBy(p => p.DisplayOrder)
             .Take(count)
             .ToListAsync(cancellationToken);
 
-    public async Task<(IList<Project> Projects, int TotalCount)> GetPagedAsync(int page, int pageSize, string? categorySlug = null, CancellationToken cancellationToken = default)
+    public async Task<(IList<Project> Projects, int TotalCount)> GetPagedAsync(string ownerId, int page, int pageSize, string? categorySlug = null, CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsNoTracking()
-            .Where(p => p.IsActive)
+            .Where(p => p.UserId == ownerId && p.IsActive)
             .Include(p => p.ProjectCategory)
             .Include(p => p.ProjectTechnologies).ThenInclude(pt => pt.Technology)
             .AsQueryable();

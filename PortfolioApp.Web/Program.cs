@@ -174,20 +174,65 @@ app.MapAreaControllerRoute(
     areaName: "Admin",
     pattern: "Admin/{controller=Dashboard}/{action=Index}/{id?}");
 
+// Per-tenant public portfolio routes — canonical for every user, including the
+// legacy migrated tenant (see the redirect shims below for its old bare URLs).
 app.MapControllerRoute(
-    name: "blogDetail",
-    pattern: "blog/{slug}",
+    name: "publicBlogDetail",
+    pattern: "u/{username}/blog/{slug}",
     defaults: new { controller = "Blog", action = "Detail" });
 
 app.MapControllerRoute(
-    name: "projectDetail",
-    pattern: "projeler/{slug}",
+    name: "publicBlog",
+    pattern: "u/{username}/blog",
+    defaults: new { controller = "Blog", action = "Index" });
+
+app.MapControllerRoute(
+    name: "publicProjectDetail",
+    pattern: "u/{username}/projeler/{slug}",
     defaults: new { controller = "Project", action = "Detail" });
 
 app.MapControllerRoute(
-    name: "projects",
-    pattern: "projeler",
+    name: "publicProjects",
+    pattern: "u/{username}/projeler",
     defaults: new { controller = "Project", action = "Index" });
+
+app.MapControllerRoute(
+    name: "publicContact",
+    pattern: "u/{username}/iletisim",
+    defaults: new { controller = "Home", action = "Contact" });
+
+app.MapControllerRoute(
+    name: "publicProfile",
+    pattern: "u/{username}",
+    defaults: new { controller = "Home", action = "Index" });
+
+// Legacy bare routes (pre-multi-tenancy) — kept only as permanent redirects to the
+// earliest-created (migrated) tenant's new /u/{handle}/... URLs, for SEO/bookmarks.
+// New tenants never get bare routes; they only ever exist at /u/{username}/....
+// The site root has no tenant-neutral landing page yet, so it redirects the same way.
+app.MapGet("/", async (PortfolioDbContext db) =>
+{
+    var earliest = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    return earliest is null ? Results.NotFound() : Results.Redirect($"/u/{earliest.Handle}", permanent: true);
+});
+
+app.MapGet("/blog/{slug}", async (string slug, PortfolioDbContext db) =>
+{
+    var earliest = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    return earliest is null ? Results.NotFound() : Results.Redirect($"/u/{earliest.Handle}/blog/{slug}", permanent: true);
+});
+
+app.MapGet("/projeler/{slug}", async (string slug, PortfolioDbContext db) =>
+{
+    var earliest = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    return earliest is null ? Results.NotFound() : Results.Redirect($"/u/{earliest.Handle}/projeler/{slug}", permanent: true);
+});
+
+app.MapGet("/projeler", async (PortfolioDbContext db) =>
+{
+    var earliest = await db.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+    return earliest is null ? Results.NotFound() : Results.Redirect($"/u/{earliest.Handle}/projeler", permanent: true);
+});
 
 app.MapControllerRoute(
     name: "default",

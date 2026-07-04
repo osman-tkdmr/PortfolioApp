@@ -18,7 +18,7 @@ public class EducationController : AdminBaseController
 
     public async Task<IActionResult> Index()
     {
-        var result = await _educationService.GetAllActiveAsync();
+        var result = await _educationService.GetAllActiveAsync(CurrentUserId);
         return View(result.Data);
     }
 

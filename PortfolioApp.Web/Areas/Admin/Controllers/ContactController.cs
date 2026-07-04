@@ -48,7 +48,7 @@ public class ContactController : AdminBaseController
 
     public async Task<IActionResult> Info()
     {
-        var result = await _contactService.GetContactInfoAsync();
+        var result = await _contactService.GetContactInfoAsync(CurrentUserId);
         var dto = result.Data is null ? new ContactInfoUpdateDto() : new ContactInfoUpdateDto
         {
             Id = result.Data.Id,

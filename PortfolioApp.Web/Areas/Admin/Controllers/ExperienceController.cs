@@ -15,7 +15,7 @@ public class ExperienceController : AdminBaseController
 
     public async Task<IActionResult> Index()
     {
-        var result = await _experienceService.GetAllActiveAsync();
+        var result = await _experienceService.GetAllActiveAsync(CurrentUserId);
         return View(result.Data);
     }
 

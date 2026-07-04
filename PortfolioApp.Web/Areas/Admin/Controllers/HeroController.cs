@@ -18,7 +18,7 @@ public class HeroController : AdminBaseController
 
     public async Task<IActionResult> Index()
     {
-        var result = await _heroService.GetActiveAsync();
+        var result = await _heroService.GetActiveAsync(CurrentUserId);
         return View(result.Data);
     }
 

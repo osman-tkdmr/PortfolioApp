@@ -9,14 +9,14 @@ public class BlogPostRepository : GenericRepository<BlogPost>
 {
     public BlogPostRepository(PortfolioDbContext context) : base(context) { }
 
-    public async Task<BlogPost?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
+    public async Task<BlogPost?> GetBySlugAsync(string ownerId, string slug, CancellationToken cancellationToken = default) =>
         await _dbSet.AsNoTracking()
             .Include(p => p.BlogCategory)
             .Include(p => p.Author)
             .Include(p => p.BlogPostTags).ThenInclude(t => t.BlogTag)
             .Include(p => p.Comments.Where(c => c.IsApproved && !c.IsDeleted))
                 .ThenInclude(c => c.Replies.Where(r => r.IsApproved && !r.IsDeleted))
-            .FirstOrDefaultAsync(p => p.Slug == slug, cancellationToken);
+            .FirstOrDefaultAsync(p => p.AuthorId == ownerId && p.Slug == slug, cancellationToken);
 
     public async Task<IList<BlogPost>> GetFeaturedAsync(int count, CancellationToken cancellationToken = default) =>
         await _dbSet.AsNoTracking()
@@ -27,19 +27,19 @@ public class BlogPostRepository : GenericRepository<BlogPost>
             .Take(count)
             .ToListAsync(cancellationToken);
 
-    public async Task<IList<BlogPost>> GetRecentAsync(int count, CancellationToken cancellationToken = default) =>
+    public async Task<IList<BlogPost>> GetRecentAsync(string ownerId, int count, CancellationToken cancellationToken = default) =>
         await _dbSet.AsNoTracking()
-            .Where(p => p.IsPublished)
+            .Where(p => p.AuthorId == ownerId && p.IsPublished)
             .Include(p => p.BlogCategory)
             .Include(p => p.Author)
             .OrderByDescending(p => p.PublishedAt)
             .Take(count)
             .ToListAsync(cancellationToken);
 
-    public async Task<(IList<BlogPost> Posts, int TotalCount)> GetPagedAsync(int page, int pageSize, string? categorySlug = null, string? tagSlug = null, string? search = null, CancellationToken cancellationToken = default)
+    public async Task<(IList<BlogPost> Posts, int TotalCount)> GetPagedAsync(string ownerId, int page, int pageSize, string? categorySlug = null, string? tagSlug = null, string? search = null, CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsNoTracking()
-            .Where(p => p.IsPublished)
+            .Where(p => p.AuthorId == ownerId && p.IsPublished)
             .Include(p => p.BlogCategory)
             .Include(p => p.Author)
             .Include(p => p.BlogPostTags).ThenInclude(t => t.BlogTag)

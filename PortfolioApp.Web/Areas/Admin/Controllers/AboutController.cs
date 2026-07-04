@@ -18,7 +18,7 @@ public class AboutController : AdminBaseController
 
     public async Task<IActionResult> Index()
     {
-        var result = await _aboutService.GetActiveAsync();
+        var result = await _aboutService.GetActiveAsync(CurrentUserId);
         return View(result.Data);
     }
 

@@ -40,9 +40,9 @@ public class BlogService : IBlogService
             : DataResult<BlogPostDto>.Ok(_mapper.Map<BlogPostDto>(post));
     }
 
-    public async Task<IDataResult<BlogPostDto>> GetBySlugAsync(string slug)
+    public async Task<IDataResult<BlogPostDto>> GetBySlugAsync(string ownerId, string slug)
     {
-        var post = await _uow.BlogPosts.GetBySlugAsync(slug);
+        var post = await _uow.BlogPosts.GetBySlugAsync(ownerId, slug);
         return post is null
             ? DataResult<BlogPostDto>.Fail("Blog yazısı bulunamadı.")
             : DataResult<BlogPostDto>.Ok(_mapper.Map<BlogPostDto>(post));
@@ -66,15 +66,15 @@ public class BlogService : IBlogService
         return DataResult<IList<BlogPostDto>>.Ok(_mapper.Map<IList<BlogPostDto>>(posts));
     }
 
-    public async Task<IDataResult<IList<BlogPostDto>>> GetRecentAsync(int count = 5)
+    public async Task<IDataResult<IList<BlogPostDto>>> GetRecentAsync(string ownerId, int count = 5)
     {
-        var posts = await _uow.BlogPosts.GetRecentAsync(count);
+        var posts = await _uow.BlogPosts.GetRecentAsync(ownerId, count);
         return DataResult<IList<BlogPostDto>>.Ok(_mapper.Map<IList<BlogPostDto>>(posts));
     }
 
-    public async Task<IDataResult<PaginatedResult<BlogPostDto>>> GetPagedAsync(int page, int pageSize, string? categorySlug = null, string? tagSlug = null, string? search = null)
+    public async Task<IDataResult<PaginatedResult<BlogPostDto>>> GetPagedAsync(string ownerId, int page, int pageSize, string? categorySlug = null, string? tagSlug = null, string? search = null)
     {
-        var (posts, totalCount) = await _uow.BlogPosts.GetPagedAsync(page, pageSize, categorySlug, tagSlug, search);
+        var (posts, totalCount) = await _uow.BlogPosts.GetPagedAsync(ownerId, page, pageSize, categorySlug, tagSlug, search);
         var result = PaginatedResult<BlogPostDto>.Create(
             _mapper.Map<IList<BlogPostDto>>(posts),
             totalCount, page, pageSize);
@@ -168,10 +168,10 @@ public class BlogService : IBlogService
     public async Task IncrementViewCountAsync(int id) =>
         await _uow.BlogPosts.IncrementViewCountAsync(id);
 
-    // Categories — shared with public (category filter dropdown), read side deferred; writes are owner-scoped
-    public async Task<IDataResult<IList<BlogCategoryDto>>> GetCategoriesAsync()
+    // Categories — shared with public (category filter dropdown)
+    public async Task<IDataResult<IList<BlogCategoryDto>>> GetCategoriesAsync(string ownerId)
     {
-        var cats = await _uow.GetRepository<BlogCategory>().GetAllAsync();
+        var cats = await _uow.GetRepository<BlogCategory>().FindAsync(c => c.UserId == ownerId);
         return DataResult<IList<BlogCategoryDto>>.Ok(_mapper.Map<IList<BlogCategoryDto>>(cats));
     }
 

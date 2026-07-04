@@ -18,7 +18,7 @@ public class CertificateController : AdminBaseController
 
     public async Task<IActionResult> Index()
     {
-        var result = await _certificateService.GetAllActiveAsync();
+        var result = await _certificateService.GetAllActiveAsync(CurrentUserId);
         return View(result.Data);
     }
 

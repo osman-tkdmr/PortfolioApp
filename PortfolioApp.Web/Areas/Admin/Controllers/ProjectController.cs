@@ -104,7 +104,7 @@ public class ProjectController : AdminBaseController
 
     public async Task<IActionResult> Categories()
     {
-        var result = await _projectService.GetCategoriesAsync();
+        var result = await _projectService.GetCategoriesAsync(CurrentUserId);
         return View(result.Data);
     }
 
@@ -168,7 +168,7 @@ public class ProjectController : AdminBaseController
 
     private async Task LoadViewBagAsync()
     {
-        var cats = await _projectService.GetCategoriesAsync();
+        var cats = await _projectService.GetCategoriesAsync(CurrentUserId);
         var techs = await _projectService.GetTechnologiesAsync();
         ViewBag.Categories = cats.Data ?? [];
         ViewBag.Technologies = techs.Data ?? [];

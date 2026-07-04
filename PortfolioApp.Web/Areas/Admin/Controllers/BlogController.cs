@@ -117,7 +117,7 @@ public class BlogController : AdminBaseController
 
     public async Task<IActionResult> Categories()
     {
-        var result = await _blogService.GetCategoriesAsync();
+        var result = await _blogService.GetCategoriesAsync(CurrentUserId);
         return View(result.Data);
     }
 
@@ -172,7 +172,7 @@ public class BlogController : AdminBaseController
 
     private async Task LoadViewBagAsync()
     {
-        var cats = await _blogService.GetCategoriesAsync();
+        var cats = await _blogService.GetCategoriesAsync(CurrentUserId);
         var tags = await _blogService.GetTagsAsync();
         ViewBag.Categories = cats.Data ?? [];
         ViewBag.Tags = tags.Data ?? [];
