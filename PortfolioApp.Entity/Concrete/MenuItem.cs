@@ -3,8 +3,10 @@ using PortfolioApp.Core.Enums;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class MenuItem : BaseEntity
+public class MenuItem : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string Title { get; set; } = string.Empty;
     public string? Url { get; set; }
     public string? IconClass { get; set; }

@@ -4,11 +4,10 @@ using PortfolioApp.Entity.Concrete;
 
 namespace PortfolioApp.DataAccess.Configurations;
 
-public class EducationConfiguration : IEntityTypeConfiguration<Education>
+public class LanguageConfiguration : IEntityTypeConfiguration<Language>
 {
-    public void Configure(EntityTypeBuilder<Education> builder)
+    public void Configure(EntityTypeBuilder<Language> builder)
     {
         builder.HasIndex(e => e.UserId);
-        builder.Property(e => e.GPA).HasColumnType("decimal(18,2)");
     }
 }

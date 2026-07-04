@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class BlogTag : BaseEntity
+public class BlogTag : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string Name { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
     public int DisplayOrder { get; set; }

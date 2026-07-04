@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class Education : BaseEntity
+public class Education : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string Degree { get; set; } = string.Empty;
     public string School { get; set; } = string.Empty;
     public string? FieldOfStudy { get; set; }

@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class SiteSettings : BaseEntity
+public class SiteSettings : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string SiteName { get; set; } = "My Portfolio";
     public string? SiteTitle { get; set; }
     public string? SiteDescription { get; set; }

@@ -13,6 +13,7 @@ public class MenuItemConfiguration : IEntityTypeConfiguration<MenuItem>
             .HasForeignKey(e => e.ParentMenuItemId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasIndex(e => e.UserId);
         builder.Property(e => e.Title).HasMaxLength(100).IsRequired();
         builder.Property(e => e.Url).HasMaxLength(500);
     }

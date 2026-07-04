@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class Experience : BaseEntity
+public class Experience : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string JobTitle { get; set; } = string.Empty;
     public string Company { get; set; } = string.Empty;
     public string? Location { get; set; }

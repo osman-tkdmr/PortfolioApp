@@ -10,6 +10,7 @@ public class VisitorLogConfiguration : IEntityTypeConfiguration<VisitorLog>
     {
         builder.HasIndex(e => e.VisitedAt);
         builder.HasIndex(e => new { e.VisitedAt, e.IsBot });
+        builder.HasIndex(e => new { e.UserId, e.VisitedAt });
 
         builder.Property(e => e.IpAddress).HasMaxLength(45);
         builder.Property(e => e.PageUrl).HasMaxLength(500);

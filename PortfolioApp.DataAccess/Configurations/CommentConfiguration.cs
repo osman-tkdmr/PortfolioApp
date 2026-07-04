@@ -14,6 +14,7 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(e => e.BlogPostId);
+        builder.HasIndex(e => e.UserId);
         builder.Property(e => e.Content).HasMaxLength(2000).IsRequired();
         builder.Property(e => e.AuthorName).HasMaxLength(100).IsRequired();
         builder.Property(e => e.AuthorEmail).HasMaxLength(200).IsRequired();

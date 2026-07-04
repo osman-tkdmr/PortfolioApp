@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class ProjectImage : BaseEntity
+public class ProjectImage : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public int ProjectId { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
     public string? AltText { get; set; }

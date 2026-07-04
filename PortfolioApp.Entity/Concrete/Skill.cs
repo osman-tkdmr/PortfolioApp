@@ -3,8 +3,10 @@ using PortfolioApp.Core.Enums;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class Skill : BaseEntity
+public class Skill : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string Name { get; set; } = string.Empty;
     public int SkillCategoryId { get; set; }
     public int Percentage { get; set; }

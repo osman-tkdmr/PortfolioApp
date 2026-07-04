@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class SocialMedia : BaseEntity
+public class SocialMedia : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string Platform { get; set; } = string.Empty;
     public string? IconClass { get; set; }
     public string Url { get; set; } = string.Empty;
