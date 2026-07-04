@@ -50,7 +50,10 @@ public static class DataSeeder
 
         var existing = await userManager.FindByEmailAsync(adminEmail);
         if (existing is not null)
+        {
+            await EnsureRolesAsync(userManager, existing, AppConstants.Roles.Admin, AppConstants.Roles.SuperAdmin, AppConstants.Roles.User);
             return existing;
+        }
 
         var firstName = configuration["AdminSettings:FirstName"];
         var lastName = configuration["AdminSettings:LastName"];
@@ -74,9 +77,7 @@ public static class DataSeeder
         var result = await userManager.CreateAsync(admin, adminPassword);
         if (result.Succeeded)
         {
-            await userManager.AddToRoleAsync(admin, AppConstants.Roles.Admin);
-            await userManager.AddToRoleAsync(admin, AppConstants.Roles.SuperAdmin);
-            await userManager.AddToRoleAsync(admin, AppConstants.Roles.User);
+            await EnsureRolesAsync(userManager, admin, AppConstants.Roles.Admin, AppConstants.Roles.SuperAdmin, AppConstants.Roles.User);
 
             if (isGeneratedPassword)
             {
@@ -90,6 +91,15 @@ public static class DataSeeder
 
         logger.LogError("Admin kullanıcısı oluşturulamadı: {Errors}", string.Join("; ", result.Errors.Select(e => e.Description)));
         return null;
+    }
+
+    private static async Task EnsureRolesAsync(UserManager<ApplicationUser> userManager, ApplicationUser user, params string[] roles)
+    {
+        foreach (var role in roles)
+        {
+            if (!await userManager.IsInRoleAsync(user, role))
+                await userManager.AddToRoleAsync(user, role);
+        }
     }
 
     private static string GenerateRandomPassword()

@@ -218,6 +218,15 @@
         <i class="fa fa-envelope"></i> Mesajlar
     </a>
 
+    @if (User.IsInRole(PortfolioApp.Core.Constants.AppConstants.Roles.SuperAdmin))
+    {
+        <div class="nav-group-title">Platform</div>
+        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Users" ? "active" : "")"
+           asp-area="Admin" asp-controller="Users" asp-action="Index">
+            <i class="fa fa-users"></i> Kullanıcılar
+        </a>
+    }
+
     <div style="height: 2rem;"></div>
 </nav>
 
