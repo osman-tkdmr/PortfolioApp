@@ -50,6 +50,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // ── Application Services ───────────────────────────────────────────────────────
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddDataAccess();
 builder.Services.AddBusiness();
 
