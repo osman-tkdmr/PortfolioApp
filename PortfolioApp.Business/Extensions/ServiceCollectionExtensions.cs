@@ -50,6 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISeoService, SeoService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IVisitorLogService, VisitorLogService>();
+        services.AddScoped<IUserProvisioningService, UserProvisioningService>();
 
         return services;
     }

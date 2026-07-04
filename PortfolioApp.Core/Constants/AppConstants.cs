@@ -6,6 +6,7 @@ public static class AppConstants
     {
         public const string Admin = "Admin";
         public const string SuperAdmin = "SuperAdmin";
+        public const string User = "User";
     }
 
     public static class CacheKeys

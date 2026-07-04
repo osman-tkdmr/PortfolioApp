@@ -1,0 +1,66 @@
+@model PortfolioApp.DTO.ViewModels.Account.AccountSettingsViewModel
+@{
+    ViewData["Title"] = "Hesap Ayarları";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-bold"><i class="fa fa-user-gear me-2 text-primary"></i>Hesap Ayarları</h5>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <form method="post" asp-action="Settings">
+            @Html.AntiForgeryToken()
+            <div class="card">
+                <div class="card-header">Profil Bilgileri</div>
+                <div class="card-body row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="FirstName" class="form-label fw-semibold"></label>
+                        <input asp-for="FirstName" class="form-control" />
+                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="LastName" class="form-label fw-semibold"></label>
+                        <input asp-for="LastName" class="form-control" />
+                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Handle" class="form-label fw-semibold">Kullanıcı Adı (site.com/u/&lt;handle&gt;)</label>
+                        <input asp-for="Handle" class="form-control" />
+                        <span asp-validation-for="Handle" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Title" class="form-label fw-semibold"></label>
+                        <input asp-for="Title" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Bio" class="form-label fw-semibold"></label>
+                        <textarea asp-for="Bio" class="form-control" rows="4"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ProfileImageUrl" class="form-label fw-semibold"></label>
+                        <input asp-for="ProfileImageUrl" class="form-control" placeholder="/uploads/avatar.jpg" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="CvFileUrl" class="form-label fw-semibold"></label>
+                        <input asp-for="CvFileUrl" class="form-control" placeholder="/uploads/cv.pdf" />
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">
+                <i class="fa fa-floppy-disk me-1"></i>Kaydet
+            </button>
+        </form>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">Şifre</div>
+            <div class="card-body">
+                <p class="text-secondary small">Şifrenizi değiştirmek için ayrı bir ekran kullanılır.</p>
+                <a asp-action="ChangePassword" class="btn btn-outline-secondary w-100">
+                    <i class="fa fa-key me-1"></i>Şifre Değiştir
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

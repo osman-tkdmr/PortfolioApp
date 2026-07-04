@@ -41,14 +41,14 @@
     @if (User.Identity?.IsAuthenticated == true)
     {
         <p class="small">Bu hesabın Admin yetkisi yok. Farklı bir hesapla giriş yapmak için önce çıkış yapın.</p>
-        <form method="post" asp-area="Admin" asp-controller="Account" asp-action="Logout">
+        <form method="post" asp-controller="Account" asp-action="Logout">
             @Html.AntiForgeryToken()
             <button type="submit" class="btn-back border-0"><i class="fa fa-right-from-bracket me-2"></i>Çıkış Yap</button>
         </form>
     }
     else
     {
-        <a href="/Admin/Account/Login" class="btn-back"><i class="fa fa-right-to-bracket me-2"></i>Giriş Sayfasına Dön</a>
+        <a asp-controller="Account" asp-action="Login" class="btn-back"><i class="fa fa-right-to-bracket me-2"></i>Giriş Sayfasına Dön</a>
     }
 
     <div class="mt-3">

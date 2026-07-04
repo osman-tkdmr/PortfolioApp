@@ -1,3 +1,9 @@
+@using Microsoft.AspNetCore.Identity
+@using PortfolioApp.Entity.Concrete
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+}
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -221,10 +227,16 @@
         <i class="fa fa-bars"></i>
     </button>
     <h6 class="page-title">@(ViewData["Title"] ?? "Dashboard")</h6>
-    <a href="/" target="_blank" class="btn btn-sm btn-outline-primary">
-        <i class="fa fa-eye me-1"></i>Siteyi Gör
-    </a>
-    <form asp-area="Admin" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+    @if (currentUser is not null)
+    {
+        <a asp-area="Admin" asp-controller="Account" asp-action="Settings" class="text-decoration-none text-secondary small me-2">
+            <i class="fa fa-user-circle me-1"></i>@currentUser.FullName (@@@currentUser.Handle)
+        </a>
+        <a href="/u/@currentUser.Handle" target="_blank" class="btn btn-sm btn-outline-primary">
+            <i class="fa fa-eye me-1"></i>Siteyi Gör
+        </a>
+    }
+    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
         @Html.AntiForgeryToken()
         <button type="submit" class="btn btn-sm btn-outline-danger">
             <i class="fa fa-right-from-bracket me-1"></i>Çıkış

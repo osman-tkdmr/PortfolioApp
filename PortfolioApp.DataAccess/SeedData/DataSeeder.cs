@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PortfolioApp.Core.Constants;
+using PortfolioApp.Core.Interfaces;
 using PortfolioApp.DataAccess.Context;
 using PortfolioApp.Entity.Concrete;
 
@@ -18,22 +19,22 @@ public static class DataSeeder
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+        var provisioningService = serviceProvider.GetRequiredService<IUserProvisioningService>();
         var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(DataSeeder));
 
         await context.Database.MigrateAsync();
 
         await SeedRolesAsync(roleManager);
-        await SeedAdminUserAsync(userManager, configuration, logger);
+        var admin = await SeedAdminUserAsync(userManager, configuration, logger);
         await SeedThemesAsync(context);
-        await SeedSiteSettingsAsync(context);
-        await SeedSeoSettingsAsync(context);
-        await SeedContactInfoAsync(context);
-        await SeedHeroSectionAsync(context);
+
+        if (admin is not null)
+            await provisioningService.ProvisionDefaultsAsync(admin.Id);
     }
 
     private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
     {
-        string[] roles = [AppConstants.Roles.Admin, AppConstants.Roles.SuperAdmin];
+        string[] roles = [AppConstants.Roles.Admin, AppConstants.Roles.SuperAdmin, AppConstants.Roles.User];
         foreach (var role in roles)
         {
             if (!await roleManager.RoleExistsAsync(role))
@@ -41,14 +42,15 @@ public static class DataSeeder
         }
     }
 
-    private static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager, IConfiguration configuration, ILogger logger)
+    private static async Task<ApplicationUser?> SeedAdminUserAsync(UserManager<ApplicationUser> userManager, IConfiguration configuration, ILogger logger)
     {
         var adminEmail = configuration["AdminSettings:Email"];
         if (string.IsNullOrWhiteSpace(adminEmail))
             adminEmail = AppConstants.SeedData.AdminEmail;
 
-        if (await userManager.FindByEmailAsync(adminEmail) is not null)
-            return;
+        var existing = await userManager.FindByEmailAsync(adminEmail);
+        if (existing is not null)
+            return existing;
 
         var firstName = configuration["AdminSettings:FirstName"];
         var lastName = configuration["AdminSettings:LastName"];
@@ -57,6 +59,7 @@ public static class DataSeeder
         {
             UserName = adminEmail,
             Email = adminEmail,
+            Handle = "admin",
             FirstName = string.IsNullOrWhiteSpace(firstName) ? AppConstants.SeedData.AdminFirstName : firstName,
             LastName = string.IsNullOrWhiteSpace(lastName) ? AppConstants.SeedData.AdminLastName : lastName,
             Title = "Full-Stack Developer",
@@ -72,6 +75,8 @@ public static class DataSeeder
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(admin, AppConstants.Roles.Admin);
+            await userManager.AddToRoleAsync(admin, AppConstants.Roles.SuperAdmin);
+            await userManager.AddToRoleAsync(admin, AppConstants.Roles.User);
 
             if (isGeneratedPassword)
             {
@@ -79,11 +84,12 @@ public static class DataSeeder
                     "AdminSettings:Password yapılandırılmamış olduğu için '{Email}' hesabı için rastgele bir şifre üretildi: {Password} — lütfen ilk girişten sonra bu şifreyi değiştirin ve appsettings/user-secrets üzerinden kalıcı bir şifre tanımlayın.",
                     adminEmail, adminPassword);
             }
+
+            return admin;
         }
-        else
-        {
-            logger.LogError("Admin kullanıcısı oluşturulamadı: {Errors}", string.Join("; ", result.Errors.Select(e => e.Description)));
-        }
+
+        logger.LogError("Admin kullanıcısı oluşturulamadı: {Errors}", string.Join("; ", result.Errors.Select(e => e.Description)));
+        return null;
     }
 
     private static string GenerateRandomPassword()
@@ -129,82 +135,6 @@ public static class DataSeeder
         };
 
         await context.Themes.AddRangeAsync(themes);
-        await context.SaveChangesAsync();
-    }
-
-    private static async Task SeedSiteSettingsAsync(PortfolioDbContext context)
-    {
-        if (await context.SiteSettings.AnyAsync())
-            return;
-
-        var activeTheme = await context.Themes.FirstOrDefaultAsync(t => t.IsActive);
-
-        var settings = new SiteSettings
-        {
-            SiteName = "My Portfolio",
-            SiteTitle = "Full-Stack Developer Portfolio",
-            SiteDescription = "Professional portfolio showcasing projects, skills and experience.",
-            CopyrightText = $"© {DateTime.Now.Year} My Portfolio. All rights reserved.",
-            Language = "tr",
-            ActiveThemeId = activeTheme?.Id
-        };
-
-        await context.SiteSettings.AddAsync(settings);
-        await context.SaveChangesAsync();
-    }
-
-    private static async Task SeedSeoSettingsAsync(PortfolioDbContext context)
-    {
-        if (await context.SeoSettings.AnyAsync())
-            return;
-
-        var pages = new List<SeoSettings>
-        {
-            new() { PageSlug = AppConstants.PageSlugs.Home, MetaTitle = "Home | My Portfolio", MetaDescription = "Welcome to my professional portfolio." },
-            new() { PageSlug = AppConstants.PageSlugs.Blog, MetaTitle = "Blog | My Portfolio", MetaDescription = "Articles about software development and technology." },
-            new() { PageSlug = AppConstants.PageSlugs.Projects, MetaTitle = "Projects | My Portfolio", MetaDescription = "Browse my portfolio of projects." },
-            new() { PageSlug = AppConstants.PageSlugs.Contact, MetaTitle = "Contact | My Portfolio", MetaDescription = "Get in touch with me." },
-            new() { PageSlug = AppConstants.PageSlugs.About, MetaTitle = "About | My Portfolio", MetaDescription = "Learn more about me." },
-        };
-
-        await context.SeoSettings.AddRangeAsync(pages);
-        await context.SaveChangesAsync();
-    }
-
-    private static async Task SeedContactInfoAsync(PortfolioDbContext context)
-    {
-        if (await context.ContactInfos.AnyAsync())
-            return;
-
-        await context.ContactInfos.AddAsync(new ContactInfo
-        {
-            Email = "hello@portfolio.com",
-            WorkingHours = "Mon-Fri: 09:00 - 18:00",
-            IsActive = true
-        });
-
-        await context.SaveChangesAsync();
-    }
-
-    private static async Task SeedHeroSectionAsync(PortfolioDbContext context)
-    {
-        if (await context.HeroSections.AnyAsync())
-            return;
-
-        await context.HeroSections.AddAsync(new HeroSection
-        {
-            Title = "Hi, I'm Your Name",
-            Subtitle = "Full-Stack Developer",
-            Description = "I build modern, scalable web applications with passion and precision.",
-            TypewriterTexts = "[\"Full-Stack Developer\",\"Software Engineer\",\"UI/UX Enthusiast\"]",
-            ShowTypewriter = true,
-            CtaButtonText = "View My Work",
-            CtaButtonUrl = "#portfolio",
-            SecondaryButtonText = "Download CV",
-            SecondaryButtonUrl = "#",
-            IsActive = true
-        });
-
         await context.SaveChangesAsync();
     }
 }

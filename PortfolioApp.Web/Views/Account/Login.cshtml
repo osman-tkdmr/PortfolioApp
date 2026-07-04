@@ -1,3 +1,4 @@
+@model PortfolioApp.DTO.ViewModels.Account.LoginViewModel
 @{
     Layout = null;
     ViewData["Title"] = "Giriş Yap";
@@ -7,7 +8,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Admin Girişi – Portfolio</title>
+    <title>Giriş Yap – Portfolio</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
@@ -36,14 +37,16 @@
         }
         .btn-login:hover { opacity: .9; color: #fff; }
         .input-group-text { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.5); }
+        .text-link { color: #b0876a; }
+        .text-link:hover { color: #d1a988; }
     </style>
 </head>
 <body>
 <div class="login-card shadow-lg">
     <div class="text-center mb-4">
         <i class="fa fa-code fa-2x mb-2" style="color:#b0876a"></i>
-        <h2 class="mt-2">Portfolio<span class="brand-dot">.</span>Admin</h2>
-        <p class="text-secondary small">Yönetim paneline giriş yapın</p>
+        <h2 class="mt-2">Portfolio<span class="brand-dot">.</span></h2>
+        <p class="text-secondary small">Hesabınıza giriş yapın</p>
     </div>
 
     @if (!ViewData.ModelState.IsValid)
@@ -56,31 +59,34 @@
         </div>
     }
 
-    <form method="post" asp-area="Admin" asp-controller="Account" asp-action="Login">
+    <form method="post" asp-controller="Account" asp-action="Login">
         @Html.AntiForgeryToken()
-        <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+        <input asp-for="ReturnUrl" type="hidden" />
 
         <div class="mb-3">
-            <label class="form-label">E-posta</label>
+            <label asp-for="Email" class="form-label">E-posta</label>
             <div class="input-group">
                 <span class="input-group-text"><i class="fa fa-envelope fa-sm"></i></span>
-                <input type="email" name="email" class="form-control" placeholder="admin@portfolio.com" required />
+                <input asp-for="Email" class="form-control" placeholder="ornek@eposta.com" />
             </div>
+            <span asp-validation-for="Email" class="text-danger small"></span>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Şifre</label>
+            <label asp-for="Password" class="form-label">Şifre</label>
             <div class="input-group">
                 <span class="input-group-text"><i class="fa fa-lock fa-sm"></i></span>
-                <input type="password" name="password" class="form-control" placeholder="••••••••" required />
+                <input asp-for="Password" class="form-control" placeholder="••••••••" />
             </div>
+            <span asp-validation-for="Password" class="text-danger small"></span>
         </div>
 
         <div class="mb-4 d-flex align-items-center justify-content-between">
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="rememberMe" id="rememberMe" />
-                <label class="form-check-label text-secondary small" for="rememberMe">Beni Hatırla</label>
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label text-secondary small">Beni Hatırla</label>
             </div>
+            <a asp-action="ForgotPassword" class="text-link small text-decoration-none">Şifremi unuttum</a>
         </div>
 
         <button type="submit" class="btn-login btn">
@@ -89,9 +95,15 @@
     </form>
 
     <div class="text-center mt-4">
+        <span class="text-secondary small">Hesabınız yok mu? <a asp-action="Register" class="text-link text-decoration-none">Kayıt olun</a></span>
+    </div>
+    <div class="text-center mt-2">
         <a href="/" class="text-secondary small"><i class="fa fa-arrow-left me-1"></i>Siteye Dön</a>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
 </body>
 </html>
