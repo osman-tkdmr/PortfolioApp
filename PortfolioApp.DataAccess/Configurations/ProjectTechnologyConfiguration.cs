@@ -20,6 +20,8 @@ public class ProjectTechnologyConfiguration : IEntityTypeConfiguration<ProjectTe
             .HasForeignKey(e => e.TechnologyId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasQueryFilter(e => !e.Project.IsDeleted);
+
         builder.ToTable("ProjectTechnologies");
     }
 }

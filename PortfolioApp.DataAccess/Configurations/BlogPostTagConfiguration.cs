@@ -20,6 +20,8 @@ public class BlogPostTagConfiguration : IEntityTypeConfiguration<BlogPostTag>
             .HasForeignKey(e => e.BlogTagId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasQueryFilter(e => !e.BlogPost.IsDeleted);
+
         builder.ToTable("BlogPostTags");
     }
 }

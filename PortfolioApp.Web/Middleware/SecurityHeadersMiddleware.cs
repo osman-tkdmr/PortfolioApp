@@ -4,12 +4,12 @@ public class SecurityHeadersMiddleware
 {
     private const string ContentSecurityPolicy =
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net https://cdn.tiny.cloud; " +
+        "script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net https://cdn.tiny.cloud https://www.googletagmanager.com; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; " +
         "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
         "img-src 'self' data: https:; " +
         "frame-src 'self' https:; " +
-        "connect-src 'self' https://cdn.tiny.cloud; " +
+        "connect-src 'self' https://cdn.tiny.cloud https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; " +
         "object-src 'none'; " +
         "base-uri 'self'; " +
         "form-action 'self'; " +
