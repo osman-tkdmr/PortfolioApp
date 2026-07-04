@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
 using PortfolioApp.Business.Services.Interfaces;
 using PortfolioApp.Core.Constants;
+using PortfolioApp.Core.Interfaces;
 using PortfolioApp.Core.Results;
 using PortfolioApp.DataAccess.UnitOfWork;
 using PortfolioApp.DTO.DTOs.Site;
@@ -15,12 +16,14 @@ public class ThemeService : IThemeService
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
     private readonly IMemoryCache _cache;
+    private readonly ICurrentUserService _currentUser;
 
-    public ThemeService(UnitOfWork uow, IMapper mapper, IMemoryCache cache)
+    public ThemeService(UnitOfWork uow, IMapper mapper, IMemoryCache cache, ICurrentUserService currentUser)
     {
         _uow = uow;
         _mapper = mapper;
         _cache = cache;
+        _currentUser = currentUser;
     }
 
     public async Task<IDataResult<ThemeDto?>> GetActiveThemeAsync()
@@ -63,7 +66,7 @@ public class ThemeService : IThemeService
             _uow.GetRepository<Theme>().Update(target);
 
             // Update SiteSettings
-            var settings = await _uow.GetRepository<SiteSettings>().FirstOrDefaultAsync(_ => true);
+            var settings = await _uow.GetRepository<SiteSettings>().FirstOrDefaultAsync(s => s.UserId == _currentUser.UserId);
             if (settings is not null)
             {
                 settings.ActiveThemeId = themeId;

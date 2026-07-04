@@ -2,6 +2,7 @@ using AutoMapper;
 using FluentValidation;
 using PortfolioApp.Business.Security;
 using PortfolioApp.Business.Services.Interfaces;
+using PortfolioApp.Core.Interfaces;
 using PortfolioApp.Core.Results;
 using PortfolioApp.Core.Utilities;
 using PortfolioApp.DataAccess.Repositories.Concrete;
@@ -17,20 +18,23 @@ public class BlogService : IBlogService
     private readonly IMapper _mapper;
     private readonly IValidator<BlogPostCreateDto> _createValidator;
     private readonly IValidator<BlogPostUpdateDto> _updateValidator;
+    private readonly ICurrentUserService _currentUser;
 
     public BlogService(UnitOfWork uow, IMapper mapper,
         IValidator<BlogPostCreateDto> createValidator,
-        IValidator<BlogPostUpdateDto> updateValidator)
+        IValidator<BlogPostUpdateDto> updateValidator,
+        ICurrentUserService currentUser)
     {
         _uow = uow;
         _mapper = mapper;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _currentUser = currentUser;
     }
 
     public async Task<IDataResult<BlogPostDto>> GetByIdAsync(int id)
     {
-        var post = await _uow.GetRepository<BlogPost>().GetByIdAsync(id);
+        var post = await _uow.GetRepository<BlogPost>().FirstOrDefaultAsync(p => p.Id == id && p.AuthorId == _currentUser.UserId);
         return post is null
             ? DataResult<BlogPostDto>.Fail("Blog yazısı bulunamadı.")
             : DataResult<BlogPostDto>.Ok(_mapper.Map<BlogPostDto>(post));
@@ -46,7 +50,7 @@ public class BlogService : IBlogService
 
     public async Task<IDataResult<IList<BlogPostDto>>> GetAllAsync()
     {
-        var posts = await _uow.GetRepository<BlogPost>().GetAllAsync();
+        var posts = await _uow.GetRepository<BlogPost>().FindAsync(p => p.AuthorId == _currentUser.UserId);
         return DataResult<IList<BlogPostDto>>.Ok(_mapper.Map<IList<BlogPostDto>>(posts));
     }
 
@@ -110,7 +114,7 @@ public class BlogService : IBlogService
         if (!validation.IsValid)
             return Result.Fail(string.Join(", ", validation.Errors.Select(e => e.ErrorMessage)));
 
-        var post = await _uow.GetRepository<BlogPost>().GetByIdAsync(id);
+        var post = await _uow.GetRepository<BlogPost>().FirstOrDefaultAsync(p => p.Id == id && p.AuthorId == _currentUser.UserId);
         if (post is null)
             return Result.Fail("Blog yazısı bulunamadı.");
 
@@ -133,6 +137,8 @@ public class BlogService : IBlogService
 
     public async Task<IResult> DeleteAsync(int id)
     {
+        var post = await _uow.GetRepository<BlogPost>().FirstOrDefaultAsync(p => p.Id == id && p.AuthorId == _currentUser.UserId);
+        if (post is null) return Result.Fail("Blog yazısı bulunamadı.");
         await _uow.GetRepository<BlogPost>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Blog yazısı silindi.");
@@ -140,7 +146,7 @@ public class BlogService : IBlogService
 
     public async Task<IResult> PublishAsync(int id)
     {
-        var post = await _uow.GetRepository<BlogPost>().GetByIdAsync(id);
+        var post = await _uow.GetRepository<BlogPost>().FirstOrDefaultAsync(p => p.Id == id && p.AuthorId == _currentUser.UserId);
         if (post is null) return Result.Fail("Blog yazısı bulunamadı.");
         post.IsPublished = true;
         post.PublishedAt = DateTime.UtcNow;
@@ -151,7 +157,7 @@ public class BlogService : IBlogService
 
     public async Task<IResult> UnpublishAsync(int id)
     {
-        var post = await _uow.GetRepository<BlogPost>().GetByIdAsync(id);
+        var post = await _uow.GetRepository<BlogPost>().FirstOrDefaultAsync(p => p.Id == id && p.AuthorId == _currentUser.UserId);
         if (post is null) return Result.Fail("Blog yazısı bulunamadı.");
         post.IsPublished = false;
         _uow.GetRepository<BlogPost>().Update(post);
@@ -162,7 +168,7 @@ public class BlogService : IBlogService
     public async Task IncrementViewCountAsync(int id) =>
         await _uow.BlogPosts.IncrementViewCountAsync(id);
 
-    // Categories
+    // Categories — shared with public (category filter dropdown), read side deferred; writes are owner-scoped
     public async Task<IDataResult<IList<BlogCategoryDto>>> GetCategoriesAsync()
     {
         var cats = await _uow.GetRepository<BlogCategory>().GetAllAsync();
@@ -173,6 +179,7 @@ public class BlogService : IBlogService
     {
         var category = _mapper.Map<BlogCategory>(dto);
         category.Slug = SlugHelper.Slugify(dto.Name);
+        category.UserId = _currentUser.RequireUserId();
         await _uow.GetRepository<BlogCategory>().AddAsync(category);
         await _uow.SaveChangesAsync();
         return Result.Ok("Kategori eklendi.");
@@ -180,7 +187,7 @@ public class BlogService : IBlogService
 
     public async Task<IResult> UpdateCategoryAsync(int id, BlogCategoryUpdateDto dto)
     {
-        var cat = await _uow.GetRepository<BlogCategory>().GetByIdAsync(id);
+        var cat = await _uow.GetRepository<BlogCategory>().FirstOrDefaultAsync(c => c.Id == id && c.UserId == _currentUser.UserId);
         if (cat is null) return Result.Fail("Kategori bulunamadı.");
         _mapper.Map(dto, cat);
         _uow.GetRepository<BlogCategory>().Update(cat);
@@ -190,21 +197,24 @@ public class BlogService : IBlogService
 
     public async Task<IResult> DeleteCategoryAsync(int id)
     {
+        var cat = await _uow.GetRepository<BlogCategory>().FirstOrDefaultAsync(c => c.Id == id && c.UserId == _currentUser.UserId);
+        if (cat is null) return Result.Fail("Kategori bulunamadı.");
         await _uow.GetRepository<BlogCategory>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Kategori silindi.");
     }
 
-    // Tags
+    // Tags — admin-only management
     public async Task<IDataResult<IList<BlogTagDto>>> GetTagsAsync()
     {
-        var tags = await _uow.GetRepository<BlogTag>().GetAllAsync();
+        var tags = await _uow.GetRepository<BlogTag>().FindAsync(t => t.UserId == _currentUser.UserId);
         return DataResult<IList<BlogTagDto>>.Ok(_mapper.Map<IList<BlogTagDto>>(tags));
     }
 
     public async Task<IResult> CreateTagAsync(BlogTagCreateDto dto)
     {
         var tag = _mapper.Map<BlogTag>(dto);
+        tag.UserId = _currentUser.RequireUserId();
         await _uow.GetRepository<BlogTag>().AddAsync(tag);
         await _uow.SaveChangesAsync();
         return Result.Ok("Etiket eklendi.");
@@ -212,6 +222,8 @@ public class BlogService : IBlogService
 
     public async Task<IResult> DeleteTagAsync(int id)
     {
+        var tag = await _uow.GetRepository<BlogTag>().FirstOrDefaultAsync(t => t.Id == id && t.UserId == _currentUser.UserId);
+        if (tag is null) return Result.Fail("Etiket bulunamadı.");
         await _uow.GetRepository<BlogTag>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Etiket silindi.");

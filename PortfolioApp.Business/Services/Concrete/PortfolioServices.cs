@@ -1,6 +1,7 @@
 using AutoMapper;
 using PortfolioApp.Business.Security;
 using PortfolioApp.Business.Services.Interfaces;
+using PortfolioApp.Core.Interfaces;
 using PortfolioApp.Core.Results;
 using PortfolioApp.DataAccess.UnitOfWork;
 using PortfolioApp.DTO.DTOs.Portfolio;
@@ -14,8 +15,14 @@ public class HeroService : IHeroService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public HeroService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public HeroService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<HeroSectionDto?>> GetActiveAsync()
     {
@@ -25,7 +32,7 @@ public class HeroService : IHeroService
 
     public async Task<IResult> UpdateAsync(HeroSectionUpdateDto dto)
     {
-        var hero = await _uow.GetRepository<HeroSection>().GetByIdAsync(dto.Id);
+        var hero = await _uow.GetRepository<HeroSection>().FirstOrDefaultAsync(h => h.Id == dto.Id && h.UserId == _currentUser.UserId);
         if (hero is null) return Result.Fail("Hero bölümü bulunamadı.");
         _mapper.Map(dto, hero);
         _uow.GetRepository<HeroSection>().Update(hero);
@@ -38,8 +45,14 @@ public class AboutService : IAboutService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public AboutService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public AboutService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<AboutDto?>> GetActiveAsync()
     {
@@ -49,7 +62,7 @@ public class AboutService : IAboutService
 
     public async Task<IResult> UpdateAsync(AboutUpdateDto dto)
     {
-        var about = await _uow.GetRepository<About>().GetByIdAsync(dto.Id);
+        var about = await _uow.GetRepository<About>().FirstOrDefaultAsync(a => a.Id == dto.Id && a.UserId == _currentUser.UserId);
         if (about is null) return Result.Fail("Hakkımda bölümü bulunamadı.");
         _mapper.Map(dto, about);
         about.Content = RichTextSanitizer.Sanitize(dto.Content);
@@ -63,8 +76,14 @@ public class ExperienceService : IExperienceService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public ExperienceService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public ExperienceService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<IList<ExperienceDto>>> GetAllActiveAsync()
     {
@@ -74,20 +93,22 @@ public class ExperienceService : IExperienceService
 
     public async Task<IDataResult<ExperienceDto>> GetByIdAsync(int id)
     {
-        var item = await _uow.GetRepository<Experience>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Experience>().FirstOrDefaultAsync(e => e.Id == id && e.UserId == _currentUser.UserId);
         return item is null ? DataResult<ExperienceDto>.Fail("Deneyim bulunamadı.") : DataResult<ExperienceDto>.Ok(_mapper.Map<ExperienceDto>(item));
     }
 
     public async Task<IResult> CreateAsync(ExperienceCreateDto dto)
     {
-        await _uow.GetRepository<Experience>().AddAsync(_mapper.Map<Experience>(dto));
+        var entity = _mapper.Map<Experience>(dto);
+        entity.UserId = _currentUser.RequireUserId();
+        await _uow.GetRepository<Experience>().AddAsync(entity);
         await _uow.SaveChangesAsync();
         return Result.Ok("Deneyim eklendi.");
     }
 
     public async Task<IResult> UpdateAsync(int id, ExperienceUpdateDto dto)
     {
-        var item = await _uow.GetRepository<Experience>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Experience>().FirstOrDefaultAsync(e => e.Id == id && e.UserId == _currentUser.UserId);
         if (item is null) return Result.Fail("Deneyim bulunamadı.");
         _mapper.Map(dto, item);
         _uow.GetRepository<Experience>().Update(item);
@@ -97,6 +118,8 @@ public class ExperienceService : IExperienceService
 
     public async Task<IResult> DeleteAsync(int id)
     {
+        var item = await _uow.GetRepository<Experience>().FirstOrDefaultAsync(e => e.Id == id && e.UserId == _currentUser.UserId);
+        if (item is null) return Result.Fail("Deneyim bulunamadı.");
         await _uow.GetRepository<Experience>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Deneyim silindi.");
@@ -107,8 +130,14 @@ public class EducationService : IEducationService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public EducationService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public EducationService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<IList<EducationDto>>> GetAllActiveAsync()
     {
@@ -118,20 +147,22 @@ public class EducationService : IEducationService
 
     public async Task<IDataResult<EducationDto>> GetByIdAsync(int id)
     {
-        var item = await _uow.GetRepository<Education>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Education>().FirstOrDefaultAsync(e => e.Id == id && e.UserId == _currentUser.UserId);
         return item is null ? DataResult<EducationDto>.Fail("Eğitim bulunamadı.") : DataResult<EducationDto>.Ok(_mapper.Map<EducationDto>(item));
     }
 
     public async Task<IResult> CreateAsync(EducationCreateDto dto)
     {
-        await _uow.GetRepository<Education>().AddAsync(_mapper.Map<Education>(dto));
+        var entity = _mapper.Map<Education>(dto);
+        entity.UserId = _currentUser.RequireUserId();
+        await _uow.GetRepository<Education>().AddAsync(entity);
         await _uow.SaveChangesAsync();
         return Result.Ok("Eğitim eklendi.");
     }
 
     public async Task<IResult> UpdateAsync(int id, EducationUpdateDto dto)
     {
-        var item = await _uow.GetRepository<Education>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Education>().FirstOrDefaultAsync(e => e.Id == id && e.UserId == _currentUser.UserId);
         if (item is null) return Result.Fail("Eğitim bulunamadı.");
         _mapper.Map(dto, item);
         _uow.GetRepository<Education>().Update(item);
@@ -141,6 +172,8 @@ public class EducationService : IEducationService
 
     public async Task<IResult> DeleteAsync(int id)
     {
+        var item = await _uow.GetRepository<Education>().FirstOrDefaultAsync(e => e.Id == id && e.UserId == _currentUser.UserId);
+        if (item is null) return Result.Fail("Eğitim bulunamadı.");
         await _uow.GetRepository<Education>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Eğitim silindi.");
@@ -151,8 +184,14 @@ public class CertificateService : ICertificateService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public CertificateService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public CertificateService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<IList<CertificateDto>>> GetAllActiveAsync()
     {
@@ -162,20 +201,22 @@ public class CertificateService : ICertificateService
 
     public async Task<IDataResult<CertificateDto>> GetByIdAsync(int id)
     {
-        var item = await _uow.GetRepository<Certificate>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Certificate>().FirstOrDefaultAsync(c => c.Id == id && c.UserId == _currentUser.UserId);
         return item is null ? DataResult<CertificateDto>.Fail("Sertifika bulunamadı.") : DataResult<CertificateDto>.Ok(_mapper.Map<CertificateDto>(item));
     }
 
     public async Task<IResult> CreateAsync(CertificateCreateDto dto)
     {
-        await _uow.GetRepository<Certificate>().AddAsync(_mapper.Map<Certificate>(dto));
+        var entity = _mapper.Map<Certificate>(dto);
+        entity.UserId = _currentUser.RequireUserId();
+        await _uow.GetRepository<Certificate>().AddAsync(entity);
         await _uow.SaveChangesAsync();
         return Result.Ok("Sertifika eklendi.");
     }
 
     public async Task<IResult> UpdateAsync(int id, CertificateUpdateDto dto)
     {
-        var item = await _uow.GetRepository<Certificate>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Certificate>().FirstOrDefaultAsync(c => c.Id == id && c.UserId == _currentUser.UserId);
         if (item is null) return Result.Fail("Sertifika bulunamadı.");
         _mapper.Map(dto, item);
         _uow.GetRepository<Certificate>().Update(item);
@@ -185,6 +226,8 @@ public class CertificateService : ICertificateService
 
     public async Task<IResult> DeleteAsync(int id)
     {
+        var item = await _uow.GetRepository<Certificate>().FirstOrDefaultAsync(c => c.Id == id && c.UserId == _currentUser.UserId);
+        if (item is null) return Result.Fail("Sertifika bulunamadı.");
         await _uow.GetRepository<Certificate>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Sertifika silindi.");
@@ -195,8 +238,14 @@ public class SkillService : ISkillService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public SkillService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public SkillService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<IList<SkillCategoryDto>>> GetCategoriesWithSkillsAsync()
     {
@@ -223,14 +272,16 @@ public class SkillService : ISkillService
 
     public async Task<IResult> CreateSkillAsync(SkillCreateDto dto)
     {
-        await _uow.GetRepository<Skill>().AddAsync(_mapper.Map<Skill>(dto));
+        var entity = _mapper.Map<Skill>(dto);
+        entity.UserId = _currentUser.RequireUserId();
+        await _uow.GetRepository<Skill>().AddAsync(entity);
         await _uow.SaveChangesAsync();
         return Result.Ok("Yetenek eklendi.");
     }
 
     public async Task<IResult> UpdateSkillAsync(int id, SkillUpdateDto dto)
     {
-        var skill = await _uow.GetRepository<Skill>().GetByIdAsync(id);
+        var skill = await _uow.GetRepository<Skill>().FirstOrDefaultAsync(s => s.Id == id && s.UserId == _currentUser.UserId);
         if (skill is null) return Result.Fail("Yetenek bulunamadı.");
         _mapper.Map(dto, skill);
         _uow.GetRepository<Skill>().Update(skill);
@@ -240,6 +291,8 @@ public class SkillService : ISkillService
 
     public async Task<IResult> DeleteSkillAsync(int id)
     {
+        var skill = await _uow.GetRepository<Skill>().FirstOrDefaultAsync(s => s.Id == id && s.UserId == _currentUser.UserId);
+        if (skill is null) return Result.Fail("Yetenek bulunamadı.");
         await _uow.GetRepository<Skill>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Yetenek silindi.");
@@ -253,14 +306,16 @@ public class SkillService : ISkillService
 
     public async Task<IResult> CreateCategoryAsync(SkillCategoryCreateDto dto)
     {
-        await _uow.GetRepository<SkillCategory>().AddAsync(_mapper.Map<SkillCategory>(dto));
+        var entity = _mapper.Map<SkillCategory>(dto);
+        entity.UserId = _currentUser.RequireUserId();
+        await _uow.GetRepository<SkillCategory>().AddAsync(entity);
         await _uow.SaveChangesAsync();
         return Result.Ok("Kategori eklendi.");
     }
 
     public async Task<IResult> UpdateCategoryAsync(int id, SkillCategoryUpdateDto dto)
     {
-        var cat = await _uow.GetRepository<SkillCategory>().GetByIdAsync(id);
+        var cat = await _uow.GetRepository<SkillCategory>().FirstOrDefaultAsync(c => c.Id == id && c.UserId == _currentUser.UserId);
         if (cat is null) return Result.Fail("Kategori bulunamadı.");
         _mapper.Map(dto, cat);
         _uow.GetRepository<SkillCategory>().Update(cat);
@@ -270,6 +325,8 @@ public class SkillService : ISkillService
 
     public async Task<IResult> DeleteCategoryAsync(int id)
     {
+        var cat = await _uow.GetRepository<SkillCategory>().FirstOrDefaultAsync(c => c.Id == id && c.UserId == _currentUser.UserId);
+        if (cat is null) return Result.Fail("Kategori bulunamadı.");
         await _uow.GetRepository<SkillCategory>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Kategori silindi.");
@@ -280,8 +337,14 @@ public class LanguageService : ILanguageService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public LanguageService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public LanguageService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<IList<LanguageDto>>> GetAllActiveAsync()
     {
@@ -291,20 +354,22 @@ public class LanguageService : ILanguageService
 
     public async Task<IDataResult<LanguageDto>> GetByIdAsync(int id)
     {
-        var item = await _uow.GetRepository<Language>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Language>().FirstOrDefaultAsync(l => l.Id == id && l.UserId == _currentUser.UserId);
         return item is null ? DataResult<LanguageDto>.Fail("Dil bulunamadı.") : DataResult<LanguageDto>.Ok(_mapper.Map<LanguageDto>(item));
     }
 
     public async Task<IResult> CreateAsync(LanguageCreateDto dto)
     {
-        await _uow.GetRepository<Language>().AddAsync(_mapper.Map<Language>(dto));
+        var entity = _mapper.Map<Language>(dto);
+        entity.UserId = _currentUser.RequireUserId();
+        await _uow.GetRepository<Language>().AddAsync(entity);
         await _uow.SaveChangesAsync();
         return Result.Ok("Dil eklendi.");
     }
 
     public async Task<IResult> UpdateAsync(int id, LanguageUpdateDto dto)
     {
-        var item = await _uow.GetRepository<Language>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Language>().FirstOrDefaultAsync(l => l.Id == id && l.UserId == _currentUser.UserId);
         if (item is null) return Result.Fail("Dil bulunamadı.");
         _mapper.Map(dto, item);
         _uow.GetRepository<Language>().Update(item);
@@ -314,6 +379,8 @@ public class LanguageService : ILanguageService
 
     public async Task<IResult> DeleteAsync(int id)
     {
+        var item = await _uow.GetRepository<Language>().FirstOrDefaultAsync(l => l.Id == id && l.UserId == _currentUser.UserId);
+        if (item is null) return Result.Fail("Dil bulunamadı.");
         await _uow.GetRepository<Language>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Dil silindi.");
@@ -324,8 +391,14 @@ public class AchievementService : IAchievementService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public AchievementService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public AchievementService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<IList<AchievementDto>>> GetAllActiveAsync()
     {
@@ -335,20 +408,22 @@ public class AchievementService : IAchievementService
 
     public async Task<IDataResult<AchievementDto>> GetByIdAsync(int id)
     {
-        var item = await _uow.GetRepository<Achievement>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Achievement>().FirstOrDefaultAsync(a => a.Id == id && a.UserId == _currentUser.UserId);
         return item is null ? DataResult<AchievementDto>.Fail("Başarı bulunamadı.") : DataResult<AchievementDto>.Ok(_mapper.Map<AchievementDto>(item));
     }
 
     public async Task<IResult> CreateAsync(AchievementCreateDto dto)
     {
-        await _uow.GetRepository<Achievement>().AddAsync(_mapper.Map<Achievement>(dto));
+        var entity = _mapper.Map<Achievement>(dto);
+        entity.UserId = _currentUser.RequireUserId();
+        await _uow.GetRepository<Achievement>().AddAsync(entity);
         await _uow.SaveChangesAsync();
         return Result.Ok("Başarı eklendi.");
     }
 
     public async Task<IResult> UpdateAsync(int id, AchievementUpdateDto dto)
     {
-        var item = await _uow.GetRepository<Achievement>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Achievement>().FirstOrDefaultAsync(a => a.Id == id && a.UserId == _currentUser.UserId);
         if (item is null) return Result.Fail("Başarı bulunamadı.");
         _mapper.Map(dto, item);
         _uow.GetRepository<Achievement>().Update(item);
@@ -358,6 +433,8 @@ public class AchievementService : IAchievementService
 
     public async Task<IResult> DeleteAsync(int id)
     {
+        var item = await _uow.GetRepository<Achievement>().FirstOrDefaultAsync(a => a.Id == id && a.UserId == _currentUser.UserId);
+        if (item is null) return Result.Fail("Başarı bulunamadı.");
         await _uow.GetRepository<Achievement>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Başarı silindi.");
@@ -368,8 +445,14 @@ public class TestimonialService : ITestimonialService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public TestimonialService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public TestimonialService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<IList<TestimonialDto>>> GetAllActiveAsync()
     {
@@ -385,20 +468,22 @@ public class TestimonialService : ITestimonialService
 
     public async Task<IDataResult<TestimonialDto>> GetByIdAsync(int id)
     {
-        var item = await _uow.GetRepository<Testimonial>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Testimonial>().FirstOrDefaultAsync(t => t.Id == id && t.UserId == _currentUser.UserId);
         return item is null ? DataResult<TestimonialDto>.Fail("Referans bulunamadı.") : DataResult<TestimonialDto>.Ok(_mapper.Map<TestimonialDto>(item));
     }
 
     public async Task<IResult> CreateAsync(TestimonialCreateDto dto)
     {
-        await _uow.GetRepository<Testimonial>().AddAsync(_mapper.Map<Testimonial>(dto));
+        var entity = _mapper.Map<Testimonial>(dto);
+        entity.UserId = _currentUser.RequireUserId();
+        await _uow.GetRepository<Testimonial>().AddAsync(entity);
         await _uow.SaveChangesAsync();
         return Result.Ok("Referans eklendi.");
     }
 
     public async Task<IResult> UpdateAsync(int id, TestimonialUpdateDto dto)
     {
-        var item = await _uow.GetRepository<Testimonial>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<Testimonial>().FirstOrDefaultAsync(t => t.Id == id && t.UserId == _currentUser.UserId);
         if (item is null) return Result.Fail("Referans bulunamadı.");
         _mapper.Map(dto, item);
         _uow.GetRepository<Testimonial>().Update(item);
@@ -408,6 +493,8 @@ public class TestimonialService : ITestimonialService
 
     public async Task<IResult> DeleteAsync(int id)
     {
+        var item = await _uow.GetRepository<Testimonial>().FirstOrDefaultAsync(t => t.Id == id && t.UserId == _currentUser.UserId);
+        if (item is null) return Result.Fail("Referans bulunamadı.");
         await _uow.GetRepository<Testimonial>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Referans silindi.");
@@ -418,8 +505,14 @@ public class SocialMediaService : ISocialMediaService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public SocialMediaService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public SocialMediaService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<IList<SocialMediaDto>>> GetAllActiveAsync()
     {
@@ -429,20 +522,22 @@ public class SocialMediaService : ISocialMediaService
 
     public async Task<IDataResult<SocialMediaDto>> GetByIdAsync(int id)
     {
-        var item = await _uow.GetRepository<SocialMedia>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<SocialMedia>().FirstOrDefaultAsync(s => s.Id == id && s.UserId == _currentUser.UserId);
         return item is null ? DataResult<SocialMediaDto>.Fail("Sosyal medya bulunamadı.") : DataResult<SocialMediaDto>.Ok(_mapper.Map<SocialMediaDto>(item));
     }
 
     public async Task<IResult> CreateAsync(SocialMediaCreateDto dto)
     {
-        await _uow.GetRepository<SocialMedia>().AddAsync(_mapper.Map<SocialMedia>(dto));
+        var entity = _mapper.Map<SocialMedia>(dto);
+        entity.UserId = _currentUser.RequireUserId();
+        await _uow.GetRepository<SocialMedia>().AddAsync(entity);
         await _uow.SaveChangesAsync();
         return Result.Ok("Sosyal medya eklendi.");
     }
 
     public async Task<IResult> UpdateAsync(int id, SocialMediaUpdateDto dto)
     {
-        var item = await _uow.GetRepository<SocialMedia>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<SocialMedia>().FirstOrDefaultAsync(s => s.Id == id && s.UserId == _currentUser.UserId);
         if (item is null) return Result.Fail("Sosyal medya bulunamadı.");
         _mapper.Map(dto, item);
         _uow.GetRepository<SocialMedia>().Update(item);
@@ -452,6 +547,8 @@ public class SocialMediaService : ISocialMediaService
 
     public async Task<IResult> DeleteAsync(int id)
     {
+        var item = await _uow.GetRepository<SocialMedia>().FirstOrDefaultAsync(s => s.Id == id && s.UserId == _currentUser.UserId);
+        if (item is null) return Result.Fail("Sosyal medya bulunamadı.");
         await _uow.GetRepository<SocialMedia>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Sosyal medya silindi.");
@@ -462,8 +559,14 @@ public class MenuService : IMenuService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public MenuService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public MenuService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<IList<MenuItemDto>>> GetHeaderMenuAsync()
     {
@@ -478,26 +581,28 @@ public class MenuService : IMenuService
 
     public async Task<IDataResult<IList<MenuItemDto>>> GetAllAsync()
     {
-        var items = await _uow.GetRepository<MenuItem>().GetAllAsync();
+        var items = await _uow.GetRepository<MenuItem>().FindAsync(m => m.UserId == _currentUser.UserId);
         return DataResult<IList<MenuItemDto>>.Ok(_mapper.Map<IList<MenuItemDto>>(items));
     }
 
     public async Task<IDataResult<MenuItemDto>> GetByIdAsync(int id)
     {
-        var item = await _uow.GetRepository<MenuItem>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<MenuItem>().FirstOrDefaultAsync(m => m.Id == id && m.UserId == _currentUser.UserId);
         return item is null ? DataResult<MenuItemDto>.Fail("Menü öğesi bulunamadı.") : DataResult<MenuItemDto>.Ok(_mapper.Map<MenuItemDto>(item));
     }
 
     public async Task<IResult> CreateAsync(MenuItemCreateDto dto)
     {
-        await _uow.GetRepository<MenuItem>().AddAsync(_mapper.Map<MenuItem>(dto));
+        var entity = _mapper.Map<MenuItem>(dto);
+        entity.UserId = _currentUser.RequireUserId();
+        await _uow.GetRepository<MenuItem>().AddAsync(entity);
         await _uow.SaveChangesAsync();
         return Result.Ok("Menü öğesi eklendi.");
     }
 
     public async Task<IResult> UpdateAsync(int id, MenuItemUpdateDto dto)
     {
-        var item = await _uow.GetRepository<MenuItem>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<MenuItem>().FirstOrDefaultAsync(m => m.Id == id && m.UserId == _currentUser.UserId);
         if (item is null) return Result.Fail("Menü öğesi bulunamadı.");
         _mapper.Map(dto, item);
         _uow.GetRepository<MenuItem>().Update(item);
@@ -507,6 +612,8 @@ public class MenuService : IMenuService
 
     public async Task<IResult> DeleteAsync(int id)
     {
+        var item = await _uow.GetRepository<MenuItem>().FirstOrDefaultAsync(m => m.Id == id && m.UserId == _currentUser.UserId);
+        if (item is null) return Result.Fail("Menü öğesi bulunamadı.");
         await _uow.GetRepository<MenuItem>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Menü öğesi silindi.");
@@ -517,8 +624,14 @@ public class FooterService : IFooterService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public FooterService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public FooterService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<IList<FooterContentDto>>> GetAllActiveAsync()
     {
@@ -528,20 +641,22 @@ public class FooterService : IFooterService
 
     public async Task<IDataResult<FooterContentDto>> GetByIdAsync(int id)
     {
-        var item = await _uow.GetRepository<FooterContent>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<FooterContent>().FirstOrDefaultAsync(f => f.Id == id && f.UserId == _currentUser.UserId);
         return item is null ? DataResult<FooterContentDto>.Fail("Footer içeriği bulunamadı.") : DataResult<FooterContentDto>.Ok(_mapper.Map<FooterContentDto>(item));
     }
 
     public async Task<IResult> CreateAsync(FooterContentCreateDto dto)
     {
-        await _uow.GetRepository<FooterContent>().AddAsync(_mapper.Map<FooterContent>(dto));
+        var entity = _mapper.Map<FooterContent>(dto);
+        entity.UserId = _currentUser.RequireUserId();
+        await _uow.GetRepository<FooterContent>().AddAsync(entity);
         await _uow.SaveChangesAsync();
         return Result.Ok("Footer içeriği eklendi.");
     }
 
     public async Task<IResult> UpdateAsync(int id, FooterContentUpdateDto dto)
     {
-        var item = await _uow.GetRepository<FooterContent>().GetByIdAsync(id);
+        var item = await _uow.GetRepository<FooterContent>().FirstOrDefaultAsync(f => f.Id == id && f.UserId == _currentUser.UserId);
         if (item is null) return Result.Fail("Footer içeriği bulunamadı.");
         _mapper.Map(dto, item);
         _uow.GetRepository<FooterContent>().Update(item);
@@ -551,6 +666,8 @@ public class FooterService : IFooterService
 
     public async Task<IResult> DeleteAsync(int id)
     {
+        var item = await _uow.GetRepository<FooterContent>().FirstOrDefaultAsync(f => f.Id == id && f.UserId == _currentUser.UserId);
+        if (item is null) return Result.Fail("Footer içeriği bulunamadı.");
         await _uow.GetRepository<FooterContent>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Footer içeriği silindi.");
@@ -561,8 +678,14 @@ public class SeoService : ISeoService
 {
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public SeoService(UnitOfWork uow, IMapper mapper) { _uow = uow; _mapper = mapper; }
+    public SeoService(UnitOfWork uow, IMapper mapper, ICurrentUserService currentUser)
+    {
+        _uow = uow;
+        _mapper = mapper;
+        _currentUser = currentUser;
+    }
 
     public async Task<IDataResult<SeoSettingsDto?>> GetByPageSlugAsync(string slug)
     {
@@ -572,13 +695,13 @@ public class SeoService : ISeoService
 
     public async Task<IDataResult<IList<SeoSettingsDto>>> GetAllAsync()
     {
-        var items = await _uow.GetRepository<SeoSettings>().GetAllAsync();
+        var items = await _uow.GetRepository<SeoSettings>().FindAsync(s => s.UserId == _currentUser.UserId);
         return DataResult<IList<SeoSettingsDto>>.Ok(_mapper.Map<IList<SeoSettingsDto>>(items));
     }
 
     public async Task<IResult> UpdateAsync(SeoSettingsUpdateDto dto)
     {
-        var seo = await _uow.GetRepository<SeoSettings>().GetByIdAsync(dto.Id);
+        var seo = await _uow.GetRepository<SeoSettings>().FirstOrDefaultAsync(s => s.Id == dto.Id && s.UserId == _currentUser.UserId);
         if (seo is null) return Result.Fail("SEO ayarı bulunamadı.");
         _mapper.Map(dto, seo);
         _uow.GetRepository<SeoSettings>().Update(seo);

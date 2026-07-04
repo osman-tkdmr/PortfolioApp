@@ -2,6 +2,7 @@ using AutoMapper;
 using FluentValidation;
 using PortfolioApp.Business.Security;
 using PortfolioApp.Business.Services.Interfaces;
+using PortfolioApp.Core.Interfaces;
 using PortfolioApp.Core.Results;
 using PortfolioApp.Core.Utilities;
 using PortfolioApp.DataAccess.UnitOfWork;
@@ -15,20 +16,22 @@ public class ProjectService : IProjectService
     private readonly UnitOfWork _uow;
     private readonly IMapper _mapper;
     private readonly IValidator<ProjectCreateDto> _createValidator;
+    private readonly ICurrentUserService _currentUser;
 
-    public ProjectService(UnitOfWork uow, IMapper mapper, IValidator<ProjectCreateDto> createValidator)
+    public ProjectService(UnitOfWork uow, IMapper mapper, IValidator<ProjectCreateDto> createValidator, ICurrentUserService currentUser)
     {
         _uow = uow;
         _mapper = mapper;
         _createValidator = createValidator;
+        _currentUser = currentUser;
     }
 
     public async Task<IDataResult<ProjectDto>> GetByIdAsync(int id)
     {
         var project = await _uow.Projects.GetWithDetailsAsync(id);
-        return project is null
-            ? DataResult<ProjectDto>.Fail("Proje bulunamadı.")
-            : DataResult<ProjectDto>.Ok(_mapper.Map<ProjectDto>(project));
+        if (project is null || project.UserId != _currentUser.UserId)
+            return DataResult<ProjectDto>.Fail("Proje bulunamadı.");
+        return DataResult<ProjectDto>.Ok(_mapper.Map<ProjectDto>(project));
     }
 
     public async Task<IDataResult<ProjectDto>> GetBySlugAsync(string slug)
@@ -41,7 +44,7 @@ public class ProjectService : IProjectService
 
     public async Task<IDataResult<IList<ProjectDto>>> GetAllAsync()
     {
-        var projects = await _uow.GetRepository<Project>().GetAllAsync();
+        var projects = await _uow.GetRepository<Project>().FindAsync(p => p.UserId == _currentUser.UserId);
         return DataResult<IList<ProjectDto>>.Ok(_mapper.Map<IList<ProjectDto>>(projects));
     }
 
@@ -72,6 +75,7 @@ public class ProjectService : IProjectService
 
         var project = _mapper.Map<Project>(dto);
         project.Description = RichTextSanitizer.Sanitize(dto.Description);
+        project.UserId = _currentUser.RequireUserId();
         await _uow.GetRepository<Project>().AddAsync(project);
         await _uow.SaveChangesAsync();
 
@@ -87,7 +91,7 @@ public class ProjectService : IProjectService
 
     public async Task<IResult> UpdateAsync(int id, ProjectUpdateDto dto)
     {
-        var project = await _uow.GetRepository<Project>().GetByIdAsync(id);
+        var project = await _uow.GetRepository<Project>().FirstOrDefaultAsync(p => p.Id == id && p.UserId == _currentUser.UserId);
         if (project is null) return Result.Fail("Proje bulunamadı.");
 
         _mapper.Map(dto, project);
@@ -107,6 +111,8 @@ public class ProjectService : IProjectService
 
     public async Task<IResult> DeleteAsync(int id)
     {
+        var project = await _uow.GetRepository<Project>().FirstOrDefaultAsync(p => p.Id == id && p.UserId == _currentUser.UserId);
+        if (project is null) return Result.Fail("Proje bulunamadı.");
         await _uow.GetRepository<Project>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Proje silindi.");
@@ -114,7 +120,7 @@ public class ProjectService : IProjectService
 
     public async Task<IResult> ToggleFeaturedAsync(int id)
     {
-        var project = await _uow.GetRepository<Project>().GetByIdAsync(id);
+        var project = await _uow.GetRepository<Project>().FirstOrDefaultAsync(p => p.Id == id && p.UserId == _currentUser.UserId);
         if (project is null) return Result.Fail("Proje bulunamadı.");
         project.IsFeatured = !project.IsFeatured;
         _uow.GetRepository<Project>().Update(project);
@@ -132,6 +138,7 @@ public class ProjectService : IProjectService
     public async Task<IResult> CreateCategoryAsync(ProjectCategoryCreateDto dto)
     {
         var cat = _mapper.Map<ProjectCategory>(dto);
+        cat.UserId = _currentUser.RequireUserId();
         await _uow.GetRepository<ProjectCategory>().AddAsync(cat);
         await _uow.SaveChangesAsync();
         return Result.Ok("Kategori eklendi.");
@@ -139,7 +146,7 @@ public class ProjectService : IProjectService
 
     public async Task<IResult> UpdateCategoryAsync(int id, ProjectCategoryUpdateDto dto)
     {
-        var cat = await _uow.GetRepository<ProjectCategory>().GetByIdAsync(id);
+        var cat = await _uow.GetRepository<ProjectCategory>().FirstOrDefaultAsync(c => c.Id == id && c.UserId == _currentUser.UserId);
         if (cat is null) return Result.Fail("Kategori bulunamadı.");
         _mapper.Map(dto, cat);
         _uow.GetRepository<ProjectCategory>().Update(cat);
@@ -149,12 +156,14 @@ public class ProjectService : IProjectService
 
     public async Task<IResult> DeleteCategoryAsync(int id)
     {
+        var cat = await _uow.GetRepository<ProjectCategory>().FirstOrDefaultAsync(c => c.Id == id && c.UserId == _currentUser.UserId);
+        if (cat is null) return Result.Fail("Kategori bulunamadı.");
         await _uow.GetRepository<ProjectCategory>().SoftDeleteAsync(id);
         await _uow.SaveChangesAsync();
         return Result.Ok("Kategori silindi.");
     }
 
-    // Technologies
+    // Technologies — shared/global reference data, not user-owned
     public async Task<IDataResult<IList<TechnologyDto>>> GetTechnologiesAsync()
     {
         var techs = await _uow.GetRepository<Technology>().GetAllAsync();
