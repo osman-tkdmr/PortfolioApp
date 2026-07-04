@@ -81,7 +81,7 @@ public class HomeController : Controller
         var contact = await _contactService.GetContactInfoAsync(ownerId);
         var social = await _socialMediaService.GetAllActiveAsync(ownerId);
         var seo = await _seoService.GetByPageSlugAsync(ownerId, "home");
-        var settings = await _siteSettingsService.GetAsync();
+        var settings = await _siteSettingsService.GetAsync(ownerId);
 
         var themeFolder = HttpContext.Items["CurrentThemeFolder"]?.ToString() ?? "Modern";
         var themeCss = HttpContext.Items["CurrentThemeCss"]?.ToString() ?? "modern.css";

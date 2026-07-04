@@ -25,12 +25,13 @@ public class SiteSettingsService : ISiteSettingsService
         _currentUser = currentUser;
     }
 
-    public async Task<IDataResult<SiteSettingsDto>> GetAsync()
+    public async Task<IDataResult<SiteSettingsDto>> GetAsync(string ownerId)
     {
-        var settings = await _cache.GetOrCreateAsync(AppConstants.CacheKeys.SiteSettings, async entry =>
+        var cacheKey = $"{AppConstants.CacheKeys.SiteSettings}:{ownerId}";
+        var settings = await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
-            return await _uow.GetRepository<SiteSettings>().FirstOrDefaultAsync(_ => true);
+            return await _uow.GetRepository<SiteSettings>().FirstOrDefaultAsync(s => s.UserId == ownerId);
         });
 
         return settings is null
@@ -48,7 +49,7 @@ public class SiteSettingsService : ISiteSettingsService
         _uow.GetRepository<SiteSettings>().Update(settings);
         await _uow.SaveChangesAsync();
 
-        _cache.Remove(AppConstants.CacheKeys.SiteSettings);
+        _cache.Remove($"{AppConstants.CacheKeys.SiteSettings}:{_currentUser.UserId}");
 
         return Result.Ok("Site ayarları güncellendi.");
     }

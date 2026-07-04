@@ -7,7 +7,7 @@ namespace PortfolioApp.Business.Services.Interfaces;
 
 public interface ISiteSettingsService
 {
-    Task<IDataResult<SiteSettingsDto>> GetAsync();
+    Task<IDataResult<SiteSettingsDto>> GetAsync(string ownerId);
     Task<IResult> UpdateAsync(SiteSettingsUpdateDto dto);
 }
 
@@ -155,8 +155,8 @@ public interface IDashboardService
 
 public interface IVisitorLogService
 {
-    Task LogVisitAsync(string? ipAddress, string? userAgent, string? pageUrl, string? referrer, string? sessionId, bool isBot);
-    Task<IDataResult<IList<VisitorChartDataDto>>> GetLast30DaysAsync();
-    Task<int> GetTodayCountAsync();
-    Task<int> GetTotalCountAsync();
+    Task LogVisitAsync(string ownerId, string? ipAddress, string? userAgent, string? pageUrl, string? referrer, string? sessionId, bool isBot);
+    Task<IDataResult<IList<VisitorChartDataDto>>> GetLast30DaysAsync(string ownerId);
+    Task<int> GetTodayCountAsync(string ownerId);
+    Task<int> GetTotalCountAsync(string ownerId);
 }

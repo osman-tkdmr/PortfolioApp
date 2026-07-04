@@ -1,6 +1,8 @@
 using System.Net;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PortfolioApp.Business.Services.Interfaces;
+using PortfolioApp.DataAccess.Context;
 
 namespace PortfolioApp.Web.Middleware;
 
@@ -32,15 +34,22 @@ public class VisitorTrackingMiddleware
             var ipAddress = AnonymizeIp(context.Connection.RemoteIpAddress);
             var referrer = context.Request.Headers.Referer.ToString();
             var sessionId = context.Session.Id;
+            var username = context.GetRouteValue("username")?.ToString();
 
             // Fire-and-forget with its own scope so it gets an independent DbContext
             _ = Task.Run(async () =>
             {
                 using var scope = _scopeFactory.CreateScope();
-                var svc = scope.ServiceProvider.GetRequiredService<IVisitorLogService>();
                 try
                 {
-                    await svc.LogVisitAsync(ipAddress, userAgent, path, referrer, sessionId, isBot);
+                    if (string.IsNullOrEmpty(username)) return;
+
+                    var db = scope.ServiceProvider.GetRequiredService<PortfolioDbContext>();
+                    var ownerId = await db.Users.Where(u => u.Handle == username).Select(u => u.Id).FirstOrDefaultAsync();
+                    if (ownerId is null) return;
+
+                    var svc = scope.ServiceProvider.GetRequiredService<IVisitorLogService>();
+                    await svc.LogVisitAsync(ownerId, ipAddress, userAgent, path, referrer, sessionId, isBot);
                 }
                 catch { /* best-effort logging, never fail the request */ }
             });

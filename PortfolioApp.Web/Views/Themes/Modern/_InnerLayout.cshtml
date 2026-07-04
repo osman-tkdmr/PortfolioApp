@@ -1,4 +1,6 @@
+@using Microsoft.EntityFrameworkCore
 @inject PortfolioApp.Business.Services.Interfaces.ISiteSettingsService SiteSettingsService
+@inject Microsoft.AspNetCore.Identity.UserManager<PortfolioApp.Entity.Concrete.ApplicationUser> UserManager
 <!DOCTYPE html>
 <html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
@@ -19,7 +21,12 @@
     <!-- Theme CSS -->
     <link rel="stylesheet" href="/css/themes/@(ViewData["ActiveThemeCss"] as string ?? "modern.css")" />
     @{
-        var siteSettingsResult = await SiteSettingsService.GetAsync();
+        var pageOwnerUsername = Context.GetRouteValue("username")?.ToString();
+        var pageOwnerId = string.IsNullOrEmpty(pageOwnerUsername) ? null : await UserManager.Users
+            .Where(u => u.Handle == pageOwnerUsername).Select(u => u.Id).FirstOrDefaultAsync();
+        var siteSettingsResult = pageOwnerId is null
+            ? PortfolioApp.Core.Results.DataResult<PortfolioApp.DTO.DTOs.Site.SiteSettingsDto>.Fail("")
+            : await SiteSettingsService.GetAsync(pageOwnerId);
     }
     @await Html.PartialAsync("_GoogleAnalytics", siteSettingsResult.Data?.GoogleAnalyticsId)
 </head>

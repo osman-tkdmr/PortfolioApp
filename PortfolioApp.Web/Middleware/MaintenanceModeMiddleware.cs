@@ -1,5 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using PortfolioApp.Business.Services.Interfaces;
-using PortfolioApp.Core.Constants;
+using PortfolioApp.DataAccess.Context;
 
 namespace PortfolioApp.Web.Middleware;
 
@@ -12,7 +13,7 @@ public class MaintenanceModeMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context, ISiteSettingsService siteSettingsService)
+    public async Task InvokeAsync(HttpContext context, ISiteSettingsService siteSettingsService, PortfolioDbContext db)
     {
         var path = context.Request.Path.Value ?? "";
 
@@ -27,9 +28,26 @@ public class MaintenanceModeMiddleware
             return;
         }
 
-        var settings = await siteSettingsService.GetAsync();
-        if (settings.Success && settings.Data?.IsMaintenanceMode == true &&
-            !context.User.IsInRole(AppConstants.Roles.Admin))
+        var username = context.GetRouteValue("username")?.ToString();
+        if (string.IsNullOrEmpty(username))
+        {
+            await _next(context);
+            return;
+        }
+
+        var ownerId = await db.Users.Where(u => u.Handle == username).Select(u => u.Id).FirstOrDefaultAsync();
+        if (ownerId is null)
+        {
+            await _next(context);
+            return;
+        }
+
+        // A tenant previewing their own (possibly maintenance-mode) site should never be locked out of it.
+        var isOwnerViewingOwnSite = context.User.Identity?.IsAuthenticated == true &&
+            context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == ownerId;
+
+        var settings = await siteSettingsService.GetAsync(ownerId);
+        if (settings.Success && settings.Data?.IsMaintenanceMode == true && !isOwnerViewingOwnSite)
         {
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             context.Response.ContentType = "text/html; charset=utf-8";

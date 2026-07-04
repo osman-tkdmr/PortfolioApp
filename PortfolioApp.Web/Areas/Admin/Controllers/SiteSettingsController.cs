@@ -15,7 +15,7 @@ public class SiteSettingsController : AdminBaseController
 
     public async Task<IActionResult> Index()
     {
-        var result = await _siteSettingsService.GetAsync();
+        var result = await _siteSettingsService.GetAsync(CurrentUserId);
         return View(result.Data);
     }
 

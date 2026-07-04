@@ -16,10 +16,11 @@ public class VisitorLogService : IVisitorLogService
         _context = context;
     }
 
-    public async Task LogVisitAsync(string? ipAddress, string? userAgent, string? pageUrl, string? referrer, string? sessionId, bool isBot)
+    public async Task LogVisitAsync(string ownerId, string? ipAddress, string? userAgent, string? pageUrl, string? referrer, string? sessionId, bool isBot)
     {
         var log = new VisitorLog
         {
+            UserId = ownerId,
             IpAddress = ipAddress,
             UserAgent = userAgent?.Length > 500 ? userAgent[..500] : userAgent,
             PageUrl = pageUrl?.Length > 500 ? pageUrl[..500] : pageUrl,
@@ -35,11 +36,11 @@ public class VisitorLogService : IVisitorLogService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IDataResult<IList<VisitorChartDataDto>>> GetLast30DaysAsync()
+    public async Task<IDataResult<IList<VisitorChartDataDto>>> GetLast30DaysAsync(string ownerId)
     {
         var since = DateTime.UtcNow.AddDays(-29).Date;
         var data = await _context.VisitorLogs
-            .Where(v => !v.IsBot && v.VisitedAt >= since)
+            .Where(v => v.UserId == ownerId && !v.IsBot && v.VisitedAt >= since)
             .GroupBy(v => DateOnly.FromDateTime(v.VisitedAt))
             .Select(g => new VisitorChartDataDto { Date = g.Key, Count = g.Count() })
             .OrderBy(d => d.Date)
@@ -48,15 +49,15 @@ public class VisitorLogService : IVisitorLogService
         return DataResult<IList<VisitorChartDataDto>>.Ok(data);
     }
 
-    public async Task<int> GetTodayCountAsync()
+    public async Task<int> GetTodayCountAsync(string ownerId)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         return await _context.VisitorLogs
-            .CountAsync(v => !v.IsBot && DateOnly.FromDateTime(v.VisitedAt) == today);
+            .CountAsync(v => v.UserId == ownerId && !v.IsBot && DateOnly.FromDateTime(v.VisitedAt) == today);
     }
 
-    public async Task<int> GetTotalCountAsync() =>
-        await _context.VisitorLogs.CountAsync(v => !v.IsBot);
+    public async Task<int> GetTotalCountAsync(string ownerId) =>
+        await _context.VisitorLogs.CountAsync(v => v.UserId == ownerId && !v.IsBot);
 
     private static string? DetectDeviceType(string? userAgent)
     {
