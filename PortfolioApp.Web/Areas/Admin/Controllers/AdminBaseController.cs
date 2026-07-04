@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PortfolioApp.Core.Constants;
+using PortfolioApp.Web.Infrastructure;
 
 namespace PortfolioApp.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
-[Authorize(Roles = AppConstants.Roles.Admin)]
+[Authorize(Policy = AuthorizationPolicies.RequireTenantUser)]
 [AutoValidateAntiforgeryToken]
 public abstract class AdminBaseController : Controller
 {

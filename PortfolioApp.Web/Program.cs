@@ -33,6 +33,19 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<PortfolioDbContext>()
     .AddDefaultTokenProviders();
 
+// ── Authorization policies ─────────────────────────────────────────────────────
+// Role checks alone were "any Admin can manage everything" — policies let us
+// name the intent (coarse feature gate) separately from per-row ownership,
+// which stays a service-layer concern (see ICurrentUserService usage).
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthorizationPolicies.RequireTenantUser, policy =>
+        policy.RequireRole(AppConstants.Roles.User));
+
+    options.AddPolicy(AuthorizationPolicies.RequireSuperAdmin, policy =>
+        policy.RequireRole(AppConstants.Roles.SuperAdmin));
+});
+
 // Admin views send the antiforgery token via this header on fetch()-based AJAX calls
 // (form-based posts still use the default __RequestVerificationToken form field).
 builder.Services.AddAntiforgery(options => options.HeaderName = "RequestVerificationToken");
