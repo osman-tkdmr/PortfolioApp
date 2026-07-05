@@ -41,6 +41,9 @@
                 <li class="nav-item"><a class="nav-link" href="#resume">@SharedLocalizer["NavResume"]</a></li>
                 <li class="nav-item"><a class="nav-link" href="#blog">@SharedLocalizer["NavBlog"]</a></li>
                 <li class="nav-item"><a class="nav-link" href="#contact">@SharedLocalizer["NavContact"]</a></li>
+                <li class="nav-item ms-lg-2">
+                    @await Html.PartialAsync("_LanguageToggle")
+                </li>
             </ul>
         </div>
     </div>

@@ -53,6 +53,9 @@
   <data name="NavContact" xml:space="preserve">
     <value>Contact</value>
   </data>
+  <data name="LanguageSwitchTitle" xml:space="preserve">
+    <value>Switch language</value>
+  </data>
   <data name="FooterRights" xml:space="preserve">
     <value>All rights reserved.</value>
   </data>

@@ -1,0 +1,48 @@
+@{
+    var isTurkish = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "tr";
+    var targetCulture = isTurkish ? "en-US" : "tr-TR";
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
+<form asp-controller="Home" asp-action="SetLanguage" method="post" class="lang-toggle-form">
+    <input type="hidden" name="culture" value="@targetCulture" />
+    <input type="hidden" name="returnUrl" value="@returnUrl" />
+    <button type="submit" class="lang-toggle-btn" title="@SharedLocalizer["LanguageSwitchTitle"]" aria-label="@SharedLocalizer["LanguageSwitchTitle"]">
+        <span class="lang-toggle-option@(isTurkish ? " active" : "")">TR</span>
+        <span class="lang-toggle-option@(isTurkish ? "" : " active")">EN</span>
+    </button>
+</form>
+
+<style>
+    .lang-toggle-form {
+        display: inline-block;
+    }
+
+    .lang-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        background: rgba(255, 255, 255, .12);
+        border: 1px solid rgba(255, 255, 255, .3);
+        border-radius: 999px;
+        padding: .3rem .75rem;
+        font-size: .75rem;
+        font-weight: 600;
+        letter-spacing: .03em;
+        line-height: 1;
+        cursor: pointer;
+        color: inherit;
+        transition: background-color .2s ease;
+    }
+
+    .lang-toggle-btn:hover {
+        background: rgba(255, 255, 255, .22);
+    }
+
+    .lang-toggle-option {
+        opacity: .5;
+    }
+
+    .lang-toggle-option.active {
+        opacity: 1;
+    }
+</style>
