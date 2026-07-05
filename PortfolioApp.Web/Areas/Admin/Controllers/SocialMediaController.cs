@@ -15,7 +15,7 @@ public class SocialMediaController : AdminBaseController
 
     public async Task<IActionResult> Index()
     {
-        var result = await _socialMediaService.GetAllActiveAsync();
+        var result = await _socialMediaService.GetAllActiveAsync(CurrentUserId);
         return View(result.Data);
     }
 

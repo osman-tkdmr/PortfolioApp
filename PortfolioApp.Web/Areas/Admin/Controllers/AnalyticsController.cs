@@ -14,9 +14,9 @@ public class AnalyticsController : AdminBaseController
 
     public async Task<IActionResult> Index()
     {
-        var chartData = await _visitorLogService.GetLast30DaysAsync();
-        var todayCount = await _visitorLogService.GetTodayCountAsync();
-        var totalCount = await _visitorLogService.GetTotalCountAsync();
+        var chartData = await _visitorLogService.GetLast30DaysAsync(CurrentUserId);
+        var todayCount = await _visitorLogService.GetTodayCountAsync(CurrentUserId);
+        var totalCount = await _visitorLogService.GetTotalCountAsync(CurrentUserId);
 
         ViewBag.TodayCount = todayCount;
         ViewBag.TotalCount = totalCount;

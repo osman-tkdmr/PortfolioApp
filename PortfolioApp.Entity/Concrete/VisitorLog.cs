@@ -1,8 +1,11 @@
+using PortfolioApp.Core.Entities;
+
 namespace PortfolioApp.Entity.Concrete;
 
-public class VisitorLog
+public class VisitorLog : IUserOwnedEntity
 {
     public int Id { get; set; }
+    public string UserId { get; set; } = string.Empty;
     public string? IpAddress { get; set; }
     public string? UserAgent { get; set; }
     public string? Browser { get; set; }

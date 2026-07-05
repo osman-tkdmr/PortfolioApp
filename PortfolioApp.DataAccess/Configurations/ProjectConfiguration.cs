@@ -8,7 +8,8 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
 {
     public void Configure(EntityTypeBuilder<Project> builder)
     {
-        builder.HasIndex(e => e.Slug).IsUnique();
+        builder.HasIndex(e => new { e.UserId, e.Slug }).IsUnique();
+        builder.HasIndex(e => e.UserId);
         builder.Property(e => e.Title).HasMaxLength(250).IsRequired();
         builder.Property(e => e.Description).HasColumnType("nvarchar(max)");
         builder.Property(e => e.ShortDescription).HasMaxLength(500);

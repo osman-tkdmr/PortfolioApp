@@ -1,84 +1,99 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
-using PortfolioApp.Core.Constants;
+using Microsoft.EntityFrameworkCore;
+using PortfolioApp.DTO.ViewModels.Account;
 using PortfolioApp.Entity.Concrete;
-using PortfolioApp.Web.Infrastructure;
 
 namespace PortfolioApp.Web.Areas.Admin.Controllers;
 
-[Area("Admin")]
-[AllowAnonymous]
-public class AccountController : Controller
+public class AccountController : AdminBaseController
 {
-    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
 
-    public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+    public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
     {
-        _signInManager = signInManager;
         _userManager = userManager;
+        _signInManager = signInManager;
     }
 
     [HttpGet]
-    public IActionResult Login(string? returnUrl = null)
+    public async Task<IActionResult> Settings()
     {
-        // Only bounce to the dashboard if the user actually holds the Admin role —
-        // otherwise an authenticated-but-unauthorized cookie traps the user in a
-        // Login -> Dashboard -> AccessDenied -> Login loop with no way out.
-        if (User.Identity?.IsAuthenticated == true && User.IsInRole(AppConstants.Roles.Admin))
-            return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return NotFound();
 
-        ViewData["ReturnUrl"] = returnUrl;
-        return View();
+        return View(new AccountSettingsViewModel
+        {
+            FirstName = user.FirstName ?? "",
+            LastName = user.LastName ?? "",
+            Handle = user.Handle,
+            Title = user.Title,
+            Bio = user.Bio,
+            ProfileImageUrl = user.ProfileImageUrl,
+            CvFileUrl = user.CvFileUrl
+        });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [EnableRateLimiting(RateLimitPolicies.Login)]
-    public async Task<IActionResult> Login(string email, string password, bool rememberMe, string? returnUrl = null)
+    public async Task<IActionResult> Settings(AccountSettingsViewModel model)
     {
-        ViewData["ReturnUrl"] = returnUrl;
+        if (!ModelState.IsValid)
+            return View(model);
 
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return NotFound();
+
+        if (await _userManager.Users.AnyAsync(u => u.Handle == model.Handle && u.Id != user.Id))
         {
-            ModelState.AddModelError("", "E-posta ve şifre zorunludur.");
-            return View();
+            ModelState.AddModelError(nameof(model.Handle), "Bu kullanıcı adı zaten kullanılıyor.");
+            return View(model);
         }
 
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user is null || !user.IsActive)
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName;
+        user.Handle = model.Handle;
+        user.Title = model.Title;
+        user.Bio = model.Bio;
+        user.ProfileImageUrl = model.ProfileImageUrl;
+        user.CvFileUrl = model.CvFileUrl;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
         {
-            ModelState.AddModelError("", "Geçersiz e-posta veya şifre.");
-            return View();
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
+            return View(model);
         }
 
-        var result = await _signInManager.PasswordSignInAsync(user, password, rememberMe, lockoutOnFailure: true);
-
-        if (result.Succeeded)
-        {
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
-            return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
-        }
-
-        if (result.IsLockedOut)
-            ModelState.AddModelError("", "Hesabınız geçici olarak kilitlendi. Lütfen daha sonra tekrar deneyin.");
-        else
-            ModelState.AddModelError("", "Geçersiz e-posta veya şifre.");
-
-        return View();
+        Success("Profil bilgileriniz güncellendi.");
+        return RedirectToAction(nameof(Settings));
     }
+
+    [HttpGet]
+    public IActionResult ChangePassword() => View(new ChangePasswordViewModel());
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
     {
-        await _signInManager.SignOutAsync();
-        return RedirectToAction("Login");
-    }
+        if (!ModelState.IsValid)
+            return View(model);
 
-    public IActionResult AccessDenied() => View();
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return NotFound();
+
+        var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
+            return View(model);
+        }
+
+        await _signInManager.RefreshSignInAsync(user);
+        Success("Şifreniz güncellendi.");
+        return RedirectToAction(nameof(ChangePassword));
+    }
 }

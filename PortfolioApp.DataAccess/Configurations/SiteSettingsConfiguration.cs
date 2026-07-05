@@ -8,6 +8,8 @@ public class SiteSettingsConfiguration : IEntityTypeConfiguration<SiteSettings>
 {
     public void Configure(EntityTypeBuilder<SiteSettings> builder)
     {
+        builder.HasIndex(e => e.UserId).IsUnique();
+
         builder.Property(e => e.SiteName).HasMaxLength(200).IsRequired();
         builder.Property(e => e.Language).HasMaxLength(10).HasDefaultValue("tr");
 

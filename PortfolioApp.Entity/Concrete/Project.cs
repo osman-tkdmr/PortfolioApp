@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class Project : BaseEntity
+public class Project : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string Title { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
     public string? ShortDescription { get; set; }

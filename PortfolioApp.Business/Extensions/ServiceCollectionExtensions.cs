@@ -1,9 +1,11 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using PortfolioApp.Business.Mappings;
+using PortfolioApp.Business.Security;
 using PortfolioApp.Business.Services.Concrete;
 using PortfolioApp.Business.Services.Interfaces;
 using PortfolioApp.Business.Validators;
+using PortfolioApp.Core.Interfaces;
 using PortfolioApp.DataAccess.UnitOfWork;
 
 namespace PortfolioApp.Business.Extensions;
@@ -23,6 +25,9 @@ public static class ServiceCollectionExtensions
 
         // Memory Cache
         services.AddMemoryCache();
+
+        // Current-user accessor (used by services for ownership scoping)
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         // Services
         services.AddScoped<IBlogService, BlogService>();
@@ -45,6 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISeoService, SeoService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IVisitorLogService, VisitorLogService>();
+        services.AddScoped<IUserProvisioningService, UserProvisioningService>();
 
         return services;
     }

@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class Achievement : BaseEntity
+public class Achievement : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? IconClass { get; set; }

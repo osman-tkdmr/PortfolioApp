@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class Certificate : BaseEntity
+public class Certificate : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string Name { get; set; } = string.Empty;
     public string? IssuingOrganization { get; set; }
     public string? CredentialId { get; set; }

@@ -8,7 +8,8 @@ public class BlogPostConfiguration : IEntityTypeConfiguration<BlogPost>
 {
     public void Configure(EntityTypeBuilder<BlogPost> builder)
     {
-        builder.HasIndex(e => e.Slug).IsUnique();
+        builder.HasIndex(e => new { e.AuthorId, e.Slug }).IsUnique();
+        builder.HasIndex(e => e.AuthorId);
 
         builder.Property(e => e.Content).HasColumnType("nvarchar(max)");
         builder.Property(e => e.Summary).HasMaxLength(500);

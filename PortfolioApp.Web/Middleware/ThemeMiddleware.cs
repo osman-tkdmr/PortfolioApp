@@ -23,20 +23,31 @@ public class ThemeMiddleware
         if (!path.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase) &&
             !path.StartsWith("/uploads", StringComparison.OrdinalIgnoreCase))
         {
-            if (!_cache.TryGetValue(AppConstants.CacheKeys.ActiveTheme, out (string Folder, string Css, string Name) theme))
+            var username = context.GetRouteValue("username")?.ToString();
+            var cacheKey = string.IsNullOrEmpty(username)
+                ? AppConstants.CacheKeys.ActiveTheme
+                : $"{AppConstants.CacheKeys.ActiveTheme}:{username}";
+
+            if (!_cache.TryGetValue(cacheKey, out (string Folder, string Css, string Name) theme))
             {
-                var activeTheme = await db.Themes
-                    .AsNoTracking()
-                    .Where(t => t.IsActive && !t.IsDeleted)
-                    .Select(t => new { t.FolderName, t.CssFileName, t.Name })
-                    .FirstOrDefaultAsync();
+                var ownerId = string.IsNullOrEmpty(username)
+                    ? null
+                    : await db.Users.Where(u => u.Handle == username).Select(u => u.Id).FirstOrDefaultAsync();
+
+                var activeTheme = ownerId is null
+                    ? null
+                    : await db.SiteSettings
+                        .Where(s => s.UserId == ownerId)
+                        .Select(s => s.ActiveTheme)
+                        .Where(t => t != null && t.IsActive && !t.IsDeleted)
+                        .Select(t => new { t!.FolderName, t.CssFileName, t.Name })
+                        .FirstOrDefaultAsync();
 
                 theme = activeTheme is not null
                     ? (activeTheme.FolderName, activeTheme.CssFileName, activeTheme.Name)
                     : ("Modern", "modern.css", "Modern");
 
-                _cache.Set(AppConstants.CacheKeys.ActiveTheme, theme,
-                    TimeSpan.FromMinutes(30));
+                _cache.Set(cacheKey, theme, TimeSpan.FromMinutes(30));
             }
 
             context.Items["CurrentThemeFolder"] = theme.Folder;

@@ -17,27 +17,28 @@ public class GenericRepository<T> : IRepository<T> where T : BaseEntity
         _dbSet = context.Set<T>();
     }
 
-    public virtual async Task<T?> GetByIdAsync(int id) =>
-        await _dbSet.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+    public virtual async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+        await _dbSet.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
-    public virtual async Task<IList<T>> GetAllAsync() =>
-        await _dbSet.AsNoTracking().ToListAsync();
+    public virtual async Task<IList<T>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        await _dbSet.AsNoTracking().ToListAsync(cancellationToken);
 
-    public virtual async Task<IList<T>> GetAllActiveAsync() =>
+    public virtual async Task<IList<T>> GetAllActiveAsync(CancellationToken cancellationToken = default) =>
         await _dbSet.AsNoTracking()
             .Where(e => EF.Property<bool>(e, "IsActive"))
             .OrderBy(e => EF.Property<int>(e, "DisplayOrder"))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
-    public virtual async Task<IList<T>> FindAsync(Expression<Func<T, bool>> predicate) =>
-        await _dbSet.AsNoTracking().Where(predicate).ToListAsync();
+    public virtual async Task<IList<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) =>
+        await _dbSet.AsNoTracking().Where(predicate).ToListAsync(cancellationToken);
 
-    public virtual async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate) =>
-        await _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
+    public virtual async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) =>
+        await _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate, cancellationToken);
 
     public virtual IQueryable<T> GetQueryable() => _dbSet.AsQueryable();
 
-    public virtual async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
+    public virtual async Task AddAsync(T entity, CancellationToken cancellationToken = default) =>
+        await _dbSet.AddAsync(entity, cancellationToken);
 
     public virtual void Update(T entity)
     {
@@ -47,20 +48,20 @@ public class GenericRepository<T> : IRepository<T> where T : BaseEntity
 
     public virtual void Delete(T entity) => _dbSet.Remove(entity);
 
-    public virtual async Task SoftDeleteAsync(int id)
+    public virtual async Task SoftDeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var entity = await _dbSet.FindAsync(id);
+        var entity = await _dbSet.FindAsync([id], cancellationToken);
         if (entity is null) return;
         entity.IsDeleted = true;
         entity.DeletedAt = DateTime.UtcNow;
         _context.Entry(entity).State = EntityState.Modified;
     }
 
-    public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate) =>
-        await _dbSet.AnyAsync(predicate);
+    public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) =>
+        await _dbSet.AnyAsync(predicate, cancellationToken);
 
-    public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null) =>
+    public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default) =>
         predicate is null
-            ? await _dbSet.CountAsync()
-            : await _dbSet.CountAsync(predicate);
+            ? await _dbSet.CountAsync(cancellationToken)
+            : await _dbSet.CountAsync(predicate, cancellationToken);
 }

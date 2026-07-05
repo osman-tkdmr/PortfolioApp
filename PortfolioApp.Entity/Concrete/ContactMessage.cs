@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class ContactMessage : BaseEntity
+public class ContactMessage : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string SenderName { get; set; } = string.Empty;
     public string SenderEmail { get; set; } = string.Empty;
     public string? SenderPhone { get; set; }

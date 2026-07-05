@@ -15,7 +15,7 @@ public class AchievementController : AdminBaseController
 
     public async Task<IActionResult> Index()
     {
-        var result = await _achievementService.GetAllActiveAsync();
+        var result = await _achievementService.GetAllActiveAsync(CurrentUserId);
         return View(result.Data);
     }
 

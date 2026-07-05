@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class SeoSettings : BaseEntity
+public class SeoSettings : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string PageSlug { get; set; } = string.Empty;
     public string MetaTitle { get; set; } = string.Empty;
     public string? MetaDescription { get; set; }

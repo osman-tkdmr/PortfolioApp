@@ -2,8 +2,10 @@ using PortfolioApp.Core.Entities;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class Testimonial : BaseEntity
+public class Testimonial : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string AuthorName { get; set; } = string.Empty;
     public string? AuthorTitle { get; set; }
     public string? AuthorCompany { get; set; }

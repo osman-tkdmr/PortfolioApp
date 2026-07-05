@@ -3,8 +3,10 @@ using PortfolioApp.Core.Enums;
 
 namespace PortfolioApp.Entity.Concrete;
 
-public class FooterContent : BaseEntity
+public class FooterContent : BaseEntity, IUserOwnedEntity
 {
+    public string UserId { get; set; } = string.Empty;
+
     public string SectionTitle { get; set; } = string.Empty;
     public string? Content { get; set; }
     public FooterSectionType SectionType { get; set; } = FooterSectionType.Text;
