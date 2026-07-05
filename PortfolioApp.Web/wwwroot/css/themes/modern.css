@@ -48,28 +48,8 @@ h1, h2, h3, h4 { font-family: var(--font-heading); }
     transition: box-shadow .3s;
 }
 .navbar.scrolled { box-shadow: var(--shadow-soft); }
-
-.header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-}
-.logo-container { flex: 0 0 auto; display: flex; align-items: center; }
-.nav-container { flex: 1 1 auto; display: flex; justify-content: center; min-width: 0; }
-.language-container { flex: 0 0 auto; display: flex; align-items: center; }
-
 .navbar-brand { font-family: var(--font-heading); font-size: 1.4rem; color: var(--text-primary); font-weight: 700; }
 .navbar-brand span { color: var(--primary); }
-
-.nav-container .navbar-nav {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
 .nav-link { color: var(--text-secondary) !important; font-weight: 500; font-size: .9rem; padding: .4rem .8rem !important; border-radius: var(--radius-sm); transition: color .2s, background .2s; }
 .nav-link:hover, .nav-link.active { color: var(--primary) !important; background: rgba(176, 135, 106, .08); }
 
@@ -184,9 +164,8 @@ h1, h2, h3, h4 { font-family: var(--font-heading); }
     .hero-image { width: 200px; height: 200px; }
     :root { --section-padding: 3rem 0; }
 
-    /* Header stays visible on mobile (logo + language remain); only the
-       middle nav-links container collapses — bottom-nav takes over. */
-    .nav-container { display: none; }
+    /* Desktop navbar is replaced by the bottom nav on mobile */
+    #mainNav { display: none; }
     body { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
 
     #backToTop { bottom: calc(60px + 1rem + env(safe-area-inset-bottom)) !important; }
