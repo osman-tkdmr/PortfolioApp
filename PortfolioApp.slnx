@@ -5,4 +5,5 @@
   <Project Path="PortfolioApp.Entity/PortfolioApp.Entity.csproj" />
   <Project Path="PortfolioApp.DTO/PortfolioApp.DTO.csproj" />
   <Project Path="PortfolioApp.Core/PortfolioApp.Core.csproj" />
+  <Project Path="PortfolioApp.Business.Tests/PortfolioApp.Business.Tests.csproj" />
 </Solution>

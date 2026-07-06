@@ -27,14 +27,16 @@ public class PortfolioMappingProfile : Profile
         CreateMap<SkillCategory, SkillCategoryDto>()
             .ForMember(d => d.Skills, o => o.MapFrom(s => s.Skills.Where(sk => sk.IsActive && !sk.IsDeleted)));
 
-        CreateMap<SkillCategoryCreateDto, SkillCategory>();
-        CreateMap<SkillCategoryUpdateDto, SkillCategory>().ForMember(d => d.Id, o => o.Ignore());
+        // MemberList.None: Skills is a nav collection, never settable through the category create/update DTO.
+        CreateMap<SkillCategoryCreateDto, SkillCategory>(MemberList.None);
+        CreateMap<SkillCategoryUpdateDto, SkillCategory>(MemberList.None).ForMember(d => d.Id, o => o.Ignore());
 
         CreateMap<Skill, SkillDto>()
             .ForMember(d => d.CategoryName, o => o.MapFrom(s => s.SkillCategory != null ? s.SkillCategory.Name : string.Empty));
 
-        CreateMap<SkillCreateDto, Skill>();
-        CreateMap<SkillUpdateDto, Skill>().ForMember(d => d.Id, o => o.Ignore());
+        // MemberList.None: SkillCategory is the nav property; only SkillCategoryId (already on the DTO) is settable.
+        CreateMap<SkillCreateDto, Skill>(MemberList.None);
+        CreateMap<SkillUpdateDto, Skill>(MemberList.None).ForMember(d => d.Id, o => o.Ignore());
 
         CreateMap<Language, LanguageDto>();
         CreateMap<LanguageCreateDto, Language>();
