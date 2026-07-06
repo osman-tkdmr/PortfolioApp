@@ -8,8 +8,8 @@ public interface IBlogService
     Task<IDataResult<BlogPostDto>> GetByIdAsync(int id);
     Task<IDataResult<BlogPostDto>> GetBySlugAsync(string ownerId, string slug);
     Task<IDataResult<IList<BlogPostDto>>> GetAllAsync();
-    Task<IDataResult<IList<BlogPostDto>>> GetPublishedAsync();
-    Task<IDataResult<IList<BlogPostDto>>> GetFeaturedAsync(int count = 3);
+    Task<IDataResult<IList<BlogPostDto>>> GetPublishedAsync(string ownerId);
+    Task<IDataResult<IList<BlogPostDto>>> GetFeaturedAsync(string ownerId, int count = 3);
     Task<IDataResult<IList<BlogPostDto>>> GetRecentAsync(string ownerId, int count = 5);
     Task<IDataResult<PaginatedResult<BlogPostDto>>> GetPagedAsync(string ownerId, int page, int pageSize, string? categorySlug = null, string? tagSlug = null, string? search = null);
     Task<IResult> CreateAsync(BlogPostCreateDto dto, string authorId);

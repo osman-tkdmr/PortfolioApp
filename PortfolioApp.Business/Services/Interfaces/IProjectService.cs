@@ -8,7 +8,7 @@ public interface IProjectService
     Task<IDataResult<ProjectDto>> GetByIdAsync(int id);
     Task<IDataResult<ProjectDto>> GetBySlugAsync(string ownerId, string slug);
     Task<IDataResult<IList<ProjectDto>>> GetAllAsync();
-    Task<IDataResult<IList<ProjectDto>>> GetAllActiveAsync();
+    Task<IDataResult<IList<ProjectDto>>> GetAllActiveAsync(string ownerId);
     Task<IDataResult<IList<ProjectDto>>> GetFeaturedAsync(string ownerId, int count = 6);
     Task<IDataResult<PaginatedResult<ProjectDto>>> GetPagedAsync(string ownerId, int page, int pageSize, string? categorySlug = null);
     Task<IResult> CreateAsync(ProjectCreateDto dto);

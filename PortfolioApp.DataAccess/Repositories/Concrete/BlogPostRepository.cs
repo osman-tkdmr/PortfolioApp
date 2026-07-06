@@ -18,9 +18,9 @@ public class BlogPostRepository : GenericRepository<BlogPost>
                 .ThenInclude(c => c.Replies.Where(r => r.IsApproved && !r.IsDeleted))
             .FirstOrDefaultAsync(p => p.AuthorId == ownerId && p.Slug == slug, cancellationToken);
 
-    public async Task<IList<BlogPost>> GetFeaturedAsync(int count, CancellationToken cancellationToken = default) =>
+    public async Task<IList<BlogPost>> GetFeaturedAsync(string ownerId, int count, CancellationToken cancellationToken = default) =>
         await _dbSet.AsNoTracking()
-            .Where(p => p.IsFeatured && p.IsPublished)
+            .Where(p => p.AuthorId == ownerId && p.IsFeatured && p.IsPublished)
             .Include(p => p.BlogCategory)
             .Include(p => p.Author)
             .OrderByDescending(p => p.PublishedAt)

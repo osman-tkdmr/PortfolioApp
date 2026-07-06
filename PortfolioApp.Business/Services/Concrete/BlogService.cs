@@ -54,15 +54,15 @@ public class BlogService : IBlogService
         return DataResult<IList<BlogPostDto>>.Ok(_mapper.Map<IList<BlogPostDto>>(posts));
     }
 
-    public async Task<IDataResult<IList<BlogPostDto>>> GetPublishedAsync()
+    public async Task<IDataResult<IList<BlogPostDto>>> GetPublishedAsync(string ownerId)
     {
-        var posts = await _uow.GetRepository<BlogPost>().FindAsync(p => p.IsPublished);
+        var posts = await _uow.GetRepository<BlogPost>().FindAsync(p => p.AuthorId == ownerId && p.IsPublished);
         return DataResult<IList<BlogPostDto>>.Ok(_mapper.Map<IList<BlogPostDto>>(posts));
     }
 
-    public async Task<IDataResult<IList<BlogPostDto>>> GetFeaturedAsync(int count = 3)
+    public async Task<IDataResult<IList<BlogPostDto>>> GetFeaturedAsync(string ownerId, int count = 3)
     {
-        var posts = await _uow.BlogPosts.GetFeaturedAsync(count);
+        var posts = await _uow.BlogPosts.GetFeaturedAsync(ownerId, count);
         return DataResult<IList<BlogPostDto>>.Ok(_mapper.Map<IList<BlogPostDto>>(posts));
     }
 
