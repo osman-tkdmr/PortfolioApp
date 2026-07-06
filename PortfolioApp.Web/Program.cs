@@ -130,6 +130,7 @@ var localizationOptions = new RequestLocalizationOptions()
     .AddSupportedUICultures(supportedCultures);
 localizationOptions.RequestCultureProviders = new List<IRequestCultureProvider>
 {
+    new CookieRequestCultureProvider(),
     new SiteSettingsRequestCultureProvider()
 };
 

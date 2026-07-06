@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -134,6 +135,22 @@ public class HomeController : Controller
 
         var result = await _contactService.SendMessageAsync(owner.Id, dto);
         return Json(new { success = result.Success, message = result.Message });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult SetLanguage(string culture, string returnUrl)
+    {
+        var supportedCultures = new[] { "tr-TR", "en-US" };
+        if (!supportedCultures.Contains(culture, StringComparer.OrdinalIgnoreCase))
+            culture = supportedCultures[0];
+
+        Response.Cookies.Append(
+            CookieRequestCultureProvider.DefaultCookieName,
+            CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true });
+
+        return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
