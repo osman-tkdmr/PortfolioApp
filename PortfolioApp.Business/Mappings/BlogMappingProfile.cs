@@ -16,14 +16,16 @@ public class BlogMappingProfile : Profile
             .ForMember(d => d.TagNames, o => o.MapFrom(s => s.BlogPostTags.Select(t => t.BlogTag.Name).ToList()))
             .ForMember(d => d.Tags, o => o.MapFrom(s => s.BlogPostTags.Select(t => t.BlogTag)));
 
-        CreateMap<BlogPostCreateDto, BlogPost>()
+        // MemberList.None: ViewCount/ReadTimeMinutes/Comments are computed or defaulted server-side
+        // (BlogService.CreateAsync sets ReadTimeMinutes via PaginationHelper, ViewCount starts at 0).
+        CreateMap<BlogPostCreateDto, BlogPost>(MemberList.None)
             .ForMember(d => d.Slug, o => o.MapFrom(s => SlugHelper.Slugify(s.Title)))
             .ForMember(d => d.PublishedAt, o => o.MapFrom(s => s.IsPublished ? (DateTime?)DateTime.UtcNow : null))
             .ForMember(d => d.BlogPostTags, o => o.Ignore())
             .ForMember(d => d.BlogCategory, o => o.Ignore())
             .ForMember(d => d.Author, o => o.Ignore());
 
-        CreateMap<BlogPostUpdateDto, BlogPost>()
+        CreateMap<BlogPostUpdateDto, BlogPost>(MemberList.None)
             .ForMember(d => d.Slug, o => o.MapFrom(s => SlugHelper.Slugify(s.Title)))
             .ForMember(d => d.BlogPostTags, o => o.Ignore())
             .ForMember(d => d.BlogCategory, o => o.Ignore())
@@ -32,13 +34,15 @@ public class BlogMappingProfile : Profile
         CreateMap<BlogCategory, BlogCategoryDto>()
             .ForMember(d => d.PostCount, o => o.MapFrom(s => s.BlogPosts.Count(p => p.IsPublished && !p.IsDeleted)));
 
-        CreateMap<BlogCategoryCreateDto, BlogCategory>();
-        CreateMap<BlogCategoryUpdateDto, BlogCategory>();
+        // MemberList.None: Slug is computed via SlugHelper.Slugify in BlogService.CreateCategoryAsync, not through AutoMapper.
+        CreateMap<BlogCategoryCreateDto, BlogCategory>(MemberList.None);
+        CreateMap<BlogCategoryUpdateDto, BlogCategory>(MemberList.None);
 
         CreateMap<BlogTag, BlogTagDto>()
             .ForMember(d => d.PostCount, o => o.MapFrom(s => s.BlogPostTags.Count));
 
-        CreateMap<BlogTagCreateDto, BlogTag>()
+        // MemberList.None: DisplayOrder isn't exposed on BlogTagCreateDto (defaults to 0); BlogPostTags is a nav collection.
+        CreateMap<BlogTagCreateDto, BlogTag>(MemberList.None)
             .ForMember(d => d.Slug, o => o.MapFrom(s => SlugHelper.Slugify(s.Name)));
     }
 }

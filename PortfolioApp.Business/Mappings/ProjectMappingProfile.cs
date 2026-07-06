@@ -27,17 +27,19 @@ public class ProjectMappingProfile : Profile
 
         CreateMap<ProjectImage, ProjectImageDto>();
 
+        // MemberList.None: ProjectTechnologies is a nav collection, never settable through the technology create/update DTO.
         CreateMap<Technology, TechnologyDto>();
-        CreateMap<TechnologyCreateDto, Technology>();
-        CreateMap<TechnologyUpdateDto, Technology>();
+        CreateMap<TechnologyCreateDto, Technology>(MemberList.None);
+        CreateMap<TechnologyUpdateDto, Technology>(MemberList.None);
 
         CreateMap<ProjectCategory, ProjectCategoryDto>()
             .ForMember(d => d.ProjectCount, o => o.MapFrom(s => s.Projects.Count(p => p.IsActive && !p.IsDeleted)));
 
-        CreateMap<ProjectCategoryCreateDto, ProjectCategory>()
+        // MemberList.None: Projects is a nav collection, never settable through the category create/update DTO.
+        CreateMap<ProjectCategoryCreateDto, ProjectCategory>(MemberList.None)
             .ForMember(d => d.Slug, o => o.MapFrom(s => SlugHelper.Slugify(s.Name)));
 
-        CreateMap<ProjectCategoryUpdateDto, ProjectCategory>()
+        CreateMap<ProjectCategoryUpdateDto, ProjectCategory>(MemberList.None)
             .ForMember(d => d.Slug, o => o.MapFrom(s => SlugHelper.Slugify(s.Name)));
     }
 }

@@ -260,13 +260,13 @@ public class SkillService : ISkillService
 
     public async Task<IDataResult<IList<SkillDto>>> GetAllSkillsAsync()
     {
-        var skills = await _uow.GetRepository<Skill>().GetAllAsync();
+        var skills = await _uow.GetRepository<Skill>().FindAsync(s => s.UserId == _currentUser.UserId);
         return DataResult<IList<SkillDto>>.Ok(_mapper.Map<IList<SkillDto>>(skills));
     }
 
     public async Task<IDataResult<SkillDto>> GetSkillByIdAsync(int id)
     {
-        var skill = await _uow.GetRepository<Skill>().GetByIdAsync(id);
+        var skill = await _uow.GetRepository<Skill>().FirstOrDefaultAsync(s => s.Id == id && s.UserId == _currentUser.UserId);
         return skill is null ? DataResult<SkillDto>.Fail("Yetenek bulunamadı.") : DataResult<SkillDto>.Ok(_mapper.Map<SkillDto>(skill));
     }
 
@@ -300,7 +300,7 @@ public class SkillService : ISkillService
 
     public async Task<IDataResult<IList<SkillCategoryDto>>> GetAllCategoriesAsync()
     {
-        var cats = await _uow.GetRepository<SkillCategory>().GetAllAsync();
+        var cats = await _uow.GetRepository<SkillCategory>().FindAsync(c => c.UserId == _currentUser.UserId);
         return DataResult<IList<SkillCategoryDto>>.Ok(_mapper.Map<IList<SkillCategoryDto>>(cats));
     }
 

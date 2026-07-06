@@ -48,9 +48,9 @@ public class ProjectService : IProjectService
         return DataResult<IList<ProjectDto>>.Ok(_mapper.Map<IList<ProjectDto>>(projects));
     }
 
-    public async Task<IDataResult<IList<ProjectDto>>> GetAllActiveAsync()
+    public async Task<IDataResult<IList<ProjectDto>>> GetAllActiveAsync(string ownerId)
     {
-        var projects = await _uow.GetRepository<Project>().FindAsync(p => p.IsActive);
+        var projects = await _uow.GetRepository<Project>().FindAsync(p => p.UserId == ownerId && p.IsActive);
         return DataResult<IList<ProjectDto>>.Ok(_mapper.Map<IList<ProjectDto>>(projects));
     }
 

@@ -9,7 +9,9 @@ public class SiteMappingProfile : Profile
     public SiteMappingProfile()
     {
         CreateMap<SiteSettings, SiteSettingsDto>();
-        CreateMap<SiteSettingsUpdateDto, SiteSettings>().ForMember(d => d.Id, o => o.Ignore());
+        // MemberList.None: ActiveTheme is a navigation property only ever changed via ThemeService.ActivateThemeAsync
+        // (through the ActiveThemeId scalar), never directly through this update DTO.
+        CreateMap<SiteSettingsUpdateDto, SiteSettings>(MemberList.None).ForMember(d => d.Id, o => o.Ignore());
 
         CreateMap<SeoSettings, SeoSettingsDto>();
         CreateMap<SeoSettingsUpdateDto, SeoSettings>().ForMember(d => d.Id, o => o.Ignore());
@@ -20,10 +22,13 @@ public class SiteMappingProfile : Profile
         CreateMap<HeroSectionUpdateDto, HeroSection>().ForMember(d => d.Id, o => o.Ignore());
 
         CreateMap<ContactInfo, ContactInfoDto>();
-        CreateMap<ContactInfoUpdateDto, ContactInfo>().ForMember(d => d.Id, o => o.Ignore());
+        // MemberList.None: IsActive isn't exposed on ContactInfoDto/ContactInfoUpdateDto — toggled elsewhere, not through this update path.
+        CreateMap<ContactInfoUpdateDto, ContactInfo>(MemberList.None).ForMember(d => d.Id, o => o.Ignore());
 
         CreateMap<ContactMessage, ContactMessageDto>();
-        CreateMap<ContactMessageCreateDto, ContactMessage>();
+        // MemberList.None: IsRead/IsReplied/ReplyText/RepliedAt/IpAddress/IsSpam are set by dedicated
+        // ContactService methods (MarkAsReadAsync/ReplyAsync/MarkAsSpamAsync), never by the public create DTO.
+        CreateMap<ContactMessageCreateDto, ContactMessage>(MemberList.None);
 
         CreateMap<SocialMedia, SocialMediaDto>();
         CreateMap<SocialMediaCreateDto, SocialMedia>();
