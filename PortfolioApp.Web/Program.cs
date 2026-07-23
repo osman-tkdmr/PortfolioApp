@@ -115,7 +115,8 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // ── MVC ────────────────────────────────────────────────────────────────────────
-builder.Services.AddControllersWithViews()
+builder.Services.AddControllersWithViews(options =>
+        options.ModelBinderProviders.Insert(0, new InvariantDecimalModelBinderProvider()))
     .AddViewLocalization()
     .AddDataAnnotationsLocalization(options =>
         options.DataAnnotationLocalizerProvider = (type, factory) => factory.Create(typeof(SharedResource)));
