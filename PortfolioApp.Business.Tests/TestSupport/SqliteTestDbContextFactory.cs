@@ -22,7 +22,7 @@ public sealed class SqliteTestDbContextFactory : IDisposable
         var options = new DbContextOptionsBuilder<PortfolioDbContext>()
             .UseSqlite(_connection)
             .Options;
-        return new TestPortfolioDbContext(options);
+        return new PortfolioDbContext(options);
     }
 
     public void Dispose() => _connection.Dispose();

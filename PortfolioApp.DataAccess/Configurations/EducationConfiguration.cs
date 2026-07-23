@@ -9,6 +9,6 @@ public class EducationConfiguration : IEntityTypeConfiguration<Education>
     public void Configure(EntityTypeBuilder<Education> builder)
     {
         builder.HasIndex(e => e.UserId);
-        builder.Property(e => e.GPA).HasColumnType("decimal(18,2)");
+        builder.Property(e => e.GPA).HasColumnType("numeric(18,2)");
     }
 }

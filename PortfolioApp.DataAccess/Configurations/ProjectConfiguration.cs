@@ -11,7 +11,7 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.HasIndex(e => new { e.UserId, e.Slug }).IsUnique();
         builder.HasIndex(e => e.UserId);
         builder.Property(e => e.Title).HasMaxLength(250).IsRequired();
-        builder.Property(e => e.Description).HasColumnType("nvarchar(max)");
+        builder.Property(e => e.Description).HasColumnType("text");
         builder.Property(e => e.ShortDescription).HasMaxLength(500);
 
         builder.HasOne(e => e.ProjectCategory)

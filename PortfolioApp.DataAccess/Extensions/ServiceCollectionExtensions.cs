@@ -25,8 +25,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddDataAccess(this IServiceCollection services, string connectionString)
     {
         services.AddDbContext<PortfolioDbContext>(options =>
-            options.UseSqlServer(connectionString, sql =>
-                sql.EnableRetryOnFailure(3)));
+            options.UseNpgsql(connectionString, npgsql =>
+                npgsql.EnableRetryOnFailure(3)));
 
         return services.AddDataAccess();
     }

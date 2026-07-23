@@ -63,7 +63,7 @@ public class TestimonialController : AdminBaseController
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _testimonialService.DeleteAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
 }

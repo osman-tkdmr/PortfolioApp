@@ -11,7 +11,7 @@ public class BlogPostConfiguration : IEntityTypeConfiguration<BlogPost>
         builder.HasIndex(e => new { e.AuthorId, e.Slug }).IsUnique();
         builder.HasIndex(e => e.AuthorId);
 
-        builder.Property(e => e.Content).HasColumnType("nvarchar(max)");
+        builder.Property(e => e.Content).HasColumnType("text");
         builder.Property(e => e.Summary).HasMaxLength(500);
         builder.Property(e => e.Title).HasMaxLength(250).IsRequired();
 

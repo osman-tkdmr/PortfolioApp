@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Multi-tenant portfolio/CMS web application built with ASP.NET Core MVC (**.NET 10**), EF Core + SQL Server, and ASP.NET Identity. Each registered user (a "tenant") gets their own portfolio site at `/u/{handle}` plus an `Admin` area scoped to their own content. User-facing messages (service results, validation) are written in **Turkish** — keep new messages consistent with that.
+Multi-tenant portfolio/CMS web application built with ASP.NET Core MVC (**.NET 10**), EF Core + PostgreSQL, and ASP.NET Identity. Each registered user (a "tenant") gets their own portfolio site at `/u/{handle}` plus an `Admin` area scoped to their own content. User-facing messages (service results, validation) are written in **Turkish** — keep new messages consistent with that.
 
 ## Commands
 
@@ -66,4 +66,4 @@ Almost every content entity (`Project`, `Hero`, `About`, `SiteSettings`, `SeoSet
 
 ## Configuration (`appsettings.json`)
 
-`ConnectionStrings:DefaultConnection` (SQL Server), `AdminSettings` (seeded admin credentials), `EmailSettings` (MailKit SMTP), `FileUpload` (size/extension limits, `wwwroot/uploads` path), `SiteSettings:MaintenanceMode`, and `TinyMCE:ApiKey` (rich-text editor in Admin).
+`ConnectionStrings:DefaultConnection` (PostgreSQL), `AdminSettings` (seeded admin credentials), `EmailSettings` (MailKit SMTP), `FileUpload` (size/extension limits, `wwwroot/uploads` path), `SiteSettings:MaintenanceMode`, and `TinyMCE:ApiKey` (rich-text editor in Admin).

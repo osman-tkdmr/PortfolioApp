@@ -43,7 +43,7 @@ public class SkillController : AdminBaseController
     public async Task<IActionResult> DeleteCategory(int id)
     {
         var result = await _skillService.DeleteCategoryAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     // ── Skills ─────────────────────────────────────────────────────────────────
@@ -70,6 +70,6 @@ public class SkillController : AdminBaseController
     public async Task<IActionResult> DeleteSkill(int id)
     {
         var result = await _skillService.DeleteSkillAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 }

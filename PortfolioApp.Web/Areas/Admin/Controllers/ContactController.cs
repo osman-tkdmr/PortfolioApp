@@ -34,14 +34,14 @@ public class ContactController : AdminBaseController
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _contactService.DeleteMessageAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     [HttpPost]
     public async Task<IActionResult> MarkSpam(int id)
     {
         var result = await _contactService.MarkAsSpamAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     // ── Contact Info ───────────────────────────────────────────────────────────

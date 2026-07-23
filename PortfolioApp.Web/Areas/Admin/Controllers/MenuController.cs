@@ -61,6 +61,6 @@ public class MenuController : AdminBaseController
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _menuService.DeleteAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 }

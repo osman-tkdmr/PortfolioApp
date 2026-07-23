@@ -40,7 +40,7 @@ Her katman, kendi servislerini `Program.cs`'den çağrılan bir `AddXxx()` exten
 ## Teknoloji Yığını
 
 - ASP.NET Core MVC (.NET 10)
-- Entity Framework Core + SQL Server
+- Entity Framework Core + PostgreSQL
 - ASP.NET Identity
 - AutoMapper, FluentValidation
 - MailKit (SMTP e-posta), SixLabors.ImageSharp (görsel işleme)
@@ -51,13 +51,13 @@ Her katman, kendi servislerini `Program.cs`'den çağrılan bir `AddXxx()` exten
 ### Gereksinimler
 
 - .NET 10 SDK
-- SQL Server (yerel veya uzak)
+- PostgreSQL (yerel veya uzak)
 
 ### Yapılandırma
 
 `PortfolioApp.Web/appsettings.json` (veya `dotnet user-secrets`) içinde aşağıdaki alanları doldurun:
 
-- `ConnectionStrings:DefaultConnection` — SQL Server bağlantı dizesi
+- `ConnectionStrings:DefaultConnection` — PostgreSQL bağlantı dizesi
 - `AdminSettings` — açılışta seed edilecek admin kullanıcısının e-posta/şifre bilgisi
 - `EmailSettings` — SMTP (MailKit) ayarları
 - `FileUpload` — yükleme boyutu/uzantı limitleri ve `wwwroot/uploads` yolu

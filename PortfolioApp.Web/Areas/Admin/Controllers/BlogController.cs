@@ -96,21 +96,21 @@ public class BlogController : AdminBaseController
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _blogService.DeleteAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     [HttpPost]
     public async Task<IActionResult> Publish(int id)
     {
         var result = await _blogService.PublishAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     [HttpPost]
     public async Task<IActionResult> Unpublish(int id)
     {
         var result = await _blogService.UnpublishAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     // ── Categories ─────────────────────────────────────────────────────────────
@@ -143,7 +143,7 @@ public class BlogController : AdminBaseController
     public async Task<IActionResult> DeleteCategory(int id)
     {
         var result = await _blogService.DeleteCategoryAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     // ── Tags ───────────────────────────────────────────────────────────────────
@@ -167,7 +167,7 @@ public class BlogController : AdminBaseController
     public async Task<IActionResult> DeleteTag(int id)
     {
         var result = await _blogService.DeleteTagAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     private async Task LoadViewBagAsync()

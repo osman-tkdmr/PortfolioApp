@@ -57,6 +57,6 @@ public class EducationController : AdminBaseController
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _educationService.DeleteAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 }

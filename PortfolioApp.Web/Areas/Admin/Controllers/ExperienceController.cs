@@ -54,6 +54,6 @@ public class ExperienceController : AdminBaseController
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _experienceService.DeleteAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 }

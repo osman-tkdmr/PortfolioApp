@@ -14,7 +14,7 @@ public class ApplicationUser : IdentityUser
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    /// <summary>URL-safe public handle used for /u/{Handle} routing — kept distinct from Identity's UserName (the login email) and deliberately not named "Username", since SQL Server's default case-insensitive collation would collide that column name with "UserName".</summary>
+    /// <summary>URL-safe public handle used for /u/{Handle} routing — kept distinct from Identity's UserName (the login email) and deliberately not named "Username" to avoid confusion with that existing property.</summary>
     public string Handle { get; set; } = string.Empty;
 
     public string FullName => $"{FirstName} {LastName}".Trim();

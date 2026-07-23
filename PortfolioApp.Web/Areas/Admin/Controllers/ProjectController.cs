@@ -90,14 +90,14 @@ public class ProjectController : AdminBaseController
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _projectService.DeleteAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     [HttpPost]
     public async Task<IActionResult> ToggleFeatured(int id)
     {
         var result = await _projectService.ToggleFeaturedAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     // ── Categories ─────────────────────────────────────────────────────────────
@@ -130,7 +130,7 @@ public class ProjectController : AdminBaseController
     public async Task<IActionResult> DeleteCategory(int id)
     {
         var result = await _projectService.DeleteCategoryAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     // ── Technologies ───────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ public class ProjectController : AdminBaseController
     public async Task<IActionResult> DeleteTechnology(int id)
     {
         var result = await _projectService.DeleteTechnologyAsync(id);
-        return JsonOk(result.Message);
+        return result.Success ? JsonOk(result.Message) : JsonFail(result.Message);
     }
 
     private async Task LoadViewBagAsync()
